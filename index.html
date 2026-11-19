@@ -316,7 +316,6 @@
         <tbody id="dBody"></tbody>
       </table>
       <button class="btn more" id="dMore">Show all 38 districts</button>
-      <p class="src" id="dSrc" style="padding:0 10px"></p>
     </div>
   </section>
 </main>
@@ -546,7 +545,6 @@
     }
     renderFacts();
     $('refNote').textContent = REF.updated ? `Official figures as of ${dlong(REF.updated)}` : '';
-    $('dSrc').innerHTML = REF.district_consumption?.source ? 'Source: ' + REF.district_consumption.source : '';
     renderRecord();
     renderDistricts();
   }
