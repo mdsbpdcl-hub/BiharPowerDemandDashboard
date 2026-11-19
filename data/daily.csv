@@ -1,2 +1,3 @@
 date,max_demand_mw,max_time,max_nb_mw,max_sb_mw,max_availability_mw,max_freq_hz,min_demand_mw,min_time,min_nb_mw,min_sb_mw,min_availability_mw,min_freq_hz,energy_mu,renewable_mu,solar_mu
 2026-11-18,5495.27,17:55:30,2527.82,2967.45,5856.09,50.02,3353.21,03:31:30,1542.48,1810.73,3520.51,50.09,1.33,1.33,1.33
+2026-11-19,5716.4,18:03:30,2629.54,3086.86,5636.77,50.21,3389.55,03:56:30,1559.19,1830.36,3513.61,50.07,2.08,1.9,1.9
