@@ -151,8 +151,6 @@
   .fact .s a{color:var(--ink-3)}
   .fact.wide{grid-column:1/-1}
   @media(max-width:620px){.facts{grid-template-columns:1fr}}
-  footer{border-top:1px solid var(--line);background:#fff;padding:18px 0;font-size:12.5px;color:var(--ink-3)}
-  footer p{margin:4px 0}
   .warnbox{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
 </style>
 </head>
@@ -323,12 +321,6 @@
   </section>
 </main>
 
-<footer>
-  <div class="wrap">
-    <p><b>Sources.</b> Live and previous-day figures: <a href="https://sldc.bsptcl.co.in" target="_blank" rel="noopener">State Load Despatch Centre, Bihar (BSPTCL)</a> public SCADA feed. Yearly figures: Central Electricity Authority, Ministry of Power (PIB) and Bihar Economic Survey, as named under each figure.</p>
-    <p>Data is collected automatically every 30 minutes. Download: <a href="data/daily.csv">daily peaks (CSV)</a> · <a id="histLink" href="#">today's readings (CSV)</a>. <span id="fetchedAt"></span></p>
-  </div>
-</footer>
 
 <script>
 (() => {
@@ -473,9 +465,6 @@
       $('pSBmin').textContent = IN(P.min.sb) + ' MW'; $('pNBmin').textContent = IN(P.min.nb) + ' MW';
       renderRecord();
     }
-    $('fetchedAt').textContent = live.fetched_at ? `Last collection run: ${fmtTime(new Date(live.fetched_at))}.` : '';
-    const day = (L.ts || new Date().toISOString()).slice(0, 10);
-    $('histLink').href = `data/history/${day.slice(0, 7)}/${day}.csv`;
   }
 
   // Record = official record, or a higher daily maximum collected from SLDC since then
