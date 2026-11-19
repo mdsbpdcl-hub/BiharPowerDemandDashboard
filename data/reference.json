@@ -1,0 +1,560 @@
+{
+ "kpis": [
+  {
+   "metric": "Consumer Base",
+   "value": "216.00",
+   "unit_note": "Lakh"
+  },
+  {
+   "metric": "Connected Load",
+   "value": "28171.00",
+   "unit_note": "MW"
+  },
+  {
+   "metric": "Peak Demand",
+   "value": "8838.00",
+   "unit_note": "MW (as on 15 Jun 2026, 8:42 PM)"
+  },
+  {
+   "metric": "Power Substations",
+   "value": "1267.00",
+   "unit_note": "Nos"
+  },
+  {
+   "metric": "Transmission line length",
+   "value": "21165.00",
+   "unit_note": "Ckm"
+  },
+  {
+   "metric": "Evacuation Capacity",
+   "value": "19150.00",
+   "unit_note": "MVA"
+  },
+  {
+   "metric": "Grid substations",
+   "value": "175.00",
+   "unit_note": "Nos"
+  },
+  {
+   "metric": "Transformation Capacity",
+   "value": "37090.00",
+   "unit_note": "MVA"
+  }
+ ],
+ "demand_supply": [
+  {
+   "year": 2017,
+   "energy_demand_mu": "27019.00",
+   "energy_availability_mu": "26603.00"
+  },
+  {
+   "year": 2018,
+   "energy_demand_mu": "30061.00",
+   "energy_availability_mu": "29825.00"
+  },
+  {
+   "year": 2019,
+   "energy_demand_mu": "31627.00",
+   "energy_availability_mu": "31533.00"
+  },
+  {
+   "year": 2020,
+   "energy_demand_mu": "34171.00",
+   "energy_availability_mu": "34018.00"
+  },
+  {
+   "year": 2021,
+   "energy_demand_mu": "36216.00",
+   "energy_availability_mu": "35761.00"
+  },
+  {
+   "year": 2022,
+   "energy_demand_mu": "39545.00",
+   "energy_availability_mu": "38762.00"
+  },
+  {
+   "year": 2023,
+   "energy_demand_mu": "41514.00",
+   "energy_availability_mu": "40918.00"
+  },
+  {
+   "year": 2024,
+   "energy_demand_mu": "44393.00",
+   "energy_availability_mu": "44217.00"
+  }
+ ],
+ "per_capita": [
+  {
+   "year": 2015,
+   "consumption_kwh": "203"
+  },
+  {
+   "year": 2016,
+   "consumption_kwh": "258"
+  },
+  {
+   "year": 2017,
+   "consumption_kwh": "272"
+  },
+  {
+   "year": 2018,
+   "consumption_kwh": "280"
+  },
+  {
+   "year": 2019,
+   "consumption_kwh": "311"
+  },
+  {
+   "year": 2020,
+   "consumption_kwh": "332"
+  },
+  {
+   "year": 2021,
+   "consumption_kwh": "316"
+  },
+  {
+   "year": 2022,
+   "consumption_kwh": "329"
+  },
+  {
+   "year": 2023,
+   "consumption_kwh": "348"
+  },
+  {
+   "year": 2024,
+   "consumption_kwh": "363"
+  },
+  {
+   "year": 2025,
+   "consumption_kwh": "374"
+  }
+ ],
+ "portfolio": [
+  {
+   "energy_source": "Thermal",
+   "percentage_share": "66.00"
+  },
+  {
+   "energy_source": "Solar",
+   "percentage_share": "16.00"
+  },
+  {
+   "energy_source": "Hydro",
+   "percentage_share": "12.00"
+  },
+  {
+   "energy_source": "Wind",
+   "percentage_share": "6.57"
+  },
+  {
+   "energy_source": "Bagasse & Biomass",
+   "percentage_share": "0.00"
+  }
+ ],
+ "rooftop_solar": [
+  {
+   "parameter": "No. of Applications",
+   "value": "52,910"
+  },
+  {
+   "parameter": "Installation (Nos.)",
+   "value": "13,372"
+  },
+  {
+   "parameter": "Household Covered (Nos.)",
+   "value": "13,819"
+  },
+  {
+   "parameter": "Installation Capacity (MW)",
+   "value": "48.08"
+  },
+  {
+   "parameter": "Subsidy released (Cr.)",
+   "value": "95.02"
+  }
+ ],
+ "district_consumption": [
+  {
+   "district": "Araria",
+   "year_2018_19": "334",
+   "year_2019_20": "369",
+   "year_2020_21": "443",
+   "year_2021_22": "472",
+   "year_2022_23": "489",
+   "year_2023_24": "538",
+   "year_2024_25": "605"
+  },
+  {
+   "district": "Arwal",
+   "year_2018_19": "166",
+   "year_2019_20": "178",
+   "year_2020_21": "214",
+   "year_2021_22": "221",
+   "year_2022_23": "234",
+   "year_2023_24": "245",
+   "year_2024_25": "254"
+  },
+  {
+   "district": "Aurangabad",
+   "year_2018_19": "908",
+   "year_2019_20": "927",
+   "year_2020_21": "1025",
+   "year_2021_22": "977",
+   "year_2022_23": "1131",
+   "year_2023_24": "1122",
+   "year_2024_25": "1193"
+  },
+  {
+   "district": "Banka",
+   "year_2018_19": "320",
+   "year_2019_20": "369",
+   "year_2020_21": "440",
+   "year_2021_22": "464",
+   "year_2022_23": "506",
+   "year_2023_24": "558",
+   "year_2024_25": "603"
+  },
+  {
+   "district": "Begusarai",
+   "year_2018_19": "603",
+   "year_2019_20": "673",
+   "year_2020_21": "733",
+   "year_2021_22": "773",
+   "year_2022_23": "881",
+   "year_2023_24": "941",
+   "year_2024_25": "1109"
+  },
+  {
+   "district": "Bhagalpur",
+   "year_2018_19": "901",
+   "year_2019_20": "994",
+   "year_2020_21": "1079",
+   "year_2021_22": "1127",
+   "year_2022_23": "1266",
+   "year_2023_24": "1301",
+   "year_2024_25": "1391"
+  },
+  {
+   "district": "Bhojpur",
+   "year_2018_19": "756",
+   "year_2019_20": "804",
+   "year_2020_21": "898",
+   "year_2021_22": "948",
+   "year_2022_23": "1083",
+   "year_2023_24": "1145",
+   "year_2024_25": "1233"
+  },
+  {
+   "district": "Buxar",
+   "year_2018_19": "483",
+   "year_2019_20": "533",
+   "year_2020_21": "658",
+   "year_2021_22": "693",
+   "year_2022_23": "777",
+   "year_2023_24": "816",
+   "year_2024_25": "921"
+  },
+  {
+   "district": "Darbhanga",
+   "year_2018_19": "635",
+   "year_2019_20": "712",
+   "year_2020_21": "833",
+   "year_2021_22": "891",
+   "year_2022_23": "931",
+   "year_2023_24": "987",
+   "year_2024_25": "1098"
+  },
+  {
+   "district": "E. Champaran",
+   "year_2018_19": "828",
+   "year_2019_20": "950",
+   "year_2020_21": "1105",
+   "year_2021_22": "1168",
+   "year_2022_23": "1259",
+   "year_2023_24": "1368",
+   "year_2024_25": "1521"
+  },
+  {
+   "district": "Gaya",
+   "year_2018_19": "1633",
+   "year_2019_20": "1707",
+   "year_2020_21": "2031",
+   "year_2021_22": "2018",
+   "year_2022_23": "2250",
+   "year_2023_24": "2402",
+   "year_2024_25": "2505"
+  },
+  {
+   "district": "Gopalganj",
+   "year_2018_19": "492",
+   "year_2019_20": "545",
+   "year_2020_21": "597",
+   "year_2021_22": "635",
+   "year_2022_23": "663",
+   "year_2023_24": "681",
+   "year_2024_25": "808"
+  },
+  {
+   "district": "Jamui",
+   "year_2018_19": "423",
+   "year_2019_20": "442",
+   "year_2020_21": "472",
+   "year_2021_22": "489",
+   "year_2022_23": "532",
+   "year_2023_24": "558",
+   "year_2024_25": "562"
+  },
+  {
+   "district": "Jehanabad",
+   "year_2018_19": "428",
+   "year_2019_20": "430",
+   "year_2020_21": "482",
+   "year_2021_22": "494",
+   "year_2022_23": "533",
+   "year_2023_24": "556",
+   "year_2024_25": "575"
+  },
+  {
+   "district": "Kaimur",
+   "year_2018_19": "715",
+   "year_2019_20": "741",
+   "year_2020_21": "751",
+   "year_2021_22": "720",
+   "year_2022_23": "847",
+   "year_2023_24": "888",
+   "year_2024_25": "991"
+  },
+  {
+   "district": "Katihar",
+   "year_2018_19": "409",
+   "year_2019_20": "478",
+   "year_2020_21": "544",
+   "year_2021_22": "609",
+   "year_2022_23": "667",
+   "year_2023_24": "740",
+   "year_2024_25": "876"
+  },
+  {
+   "district": "Khagaria",
+   "year_2018_19": "256",
+   "year_2019_20": "269",
+   "year_2020_21": "308",
+   "year_2021_22": "323",
+   "year_2022_23": "350",
+   "year_2023_24": "374",
+   "year_2024_25": "406"
+  },
+  {
+   "district": "Kishanganj",
+   "year_2018_19": "212",
+   "year_2019_20": "265",
+   "year_2020_21": "288",
+   "year_2021_22": "314",
+   "year_2022_23": "354",
+   "year_2023_24": "410",
+   "year_2024_25": "471"
+  },
+  {
+   "district": "Lakhisarai",
+   "year_2018_19": "335",
+   "year_2019_20": "349",
+   "year_2020_21": "353",
+   "year_2021_22": "420",
+   "year_2022_23": "443",
+   "year_2023_24": "462",
+   "year_2024_25": "484"
+  },
+  {
+   "district": "Madhepura",
+   "year_2018_19": "299",
+   "year_2019_20": "324",
+   "year_2020_21": "357",
+   "year_2021_22": "369",
+   "year_2022_23": "391",
+   "year_2023_24": "417",
+   "year_2024_25": "462"
+  },
+  {
+   "district": "Madhubani",
+   "year_2018_19": "565",
+   "year_2019_20": "642",
+   "year_2020_21": "747",
+   "year_2021_22": "826",
+   "year_2022_23": "869",
+   "year_2023_24": "935",
+   "year_2024_25": "1025"
+  },
+  {
+   "district": "Munger",
+   "year_2018_19": "385",
+   "year_2019_20": "397",
+   "year_2020_21": "431",
+   "year_2021_22": "451",
+   "year_2022_23": "482",
+   "year_2023_24": "529",
+   "year_2024_25": "568"
+  },
+  {
+   "district": "Muzaffarpur",
+   "year_2018_19": "1202",
+   "year_2019_20": "1370",
+   "year_2020_21": "1444",
+   "year_2021_22": "1474",
+   "year_2022_23": "1590",
+   "year_2023_24": "1656",
+   "year_2024_25": "1807"
+  },
+  {
+   "district": "Nalanda",
+   "year_2018_19": "1128",
+   "year_2019_20": "1170",
+   "year_2020_21": "1295",
+   "year_2021_22": "1254",
+   "year_2022_23": "1408",
+   "year_2023_24": "1514",
+   "year_2024_25": "1601"
+  },
+  {
+   "district": "Nawada",
+   "year_2018_19": "559",
+   "year_2019_20": "611",
+   "year_2020_21": "689",
+   "year_2021_22": "705",
+   "year_2022_23": "817",
+   "year_2023_24": "942",
+   "year_2024_25": "981"
+  },
+  {
+   "district": "Patna",
+   "year_2018_19": "5236",
+   "year_2019_20": "5495",
+   "year_2020_21": "5211",
+   "year_2021_22": "5437",
+   "year_2022_23": "6021",
+   "year_2023_24": "6476",
+   "year_2024_25": "6969"
+  },
+  {
+   "district": "Purnea",
+   "year_2018_19": "549",
+   "year_2019_20": "603",
+   "year_2020_21": "649",
+   "year_2021_22": "705",
+   "year_2022_23": "743",
+   "year_2023_24": "791",
+   "year_2024_25": "925"
+  },
+  {
+   "district": "Rohtas",
+   "year_2018_19": "1099",
+   "year_2019_20": "1139",
+   "year_2020_21": "1360",
+   "year_2021_22": "1412",
+   "year_2022_23": "1524",
+   "year_2023_24": "1570",
+   "year_2024_25": "1694"
+  },
+  {
+   "district": "Saharsa",
+   "year_2018_19": "312",
+   "year_2019_20": "333",
+   "year_2020_21": "364",
+   "year_2021_22": "378",
+   "year_2022_23": "402",
+   "year_2023_24": "430",
+   "year_2024_25": "486"
+  },
+  {
+   "district": "Samastipur",
+   "year_2018_19": "687",
+   "year_2019_20": "772",
+   "year_2020_21": "868",
+   "year_2021_22": "891",
+   "year_2022_23": "1000",
+   "year_2023_24": "1119",
+   "year_2024_25": "1265"
+  },
+  {
+   "district": "Saran",
+   "year_2018_19": "877",
+   "year_2019_20": "996",
+   "year_2020_21": "999",
+   "year_2021_22": "1081",
+   "year_2022_23": "1116",
+   "year_2023_24": "1186",
+   "year_2024_25": "1317"
+  },
+  {
+   "district": "Sheikhpura",
+   "year_2018_19": "190",
+   "year_2019_20": "241",
+   "year_2020_21": "247",
+   "year_2021_22": "249",
+   "year_2022_23": "298",
+   "year_2023_24": "322",
+   "year_2024_25": "337"
+  },
+  {
+   "district": "Sheohar",
+   "year_2018_19": "86",
+   "year_2019_20": "104",
+   "year_2020_21": "115",
+   "year_2021_22": "128",
+   "year_2022_23": "142",
+   "year_2023_24": "148",
+   "year_2024_25": "155"
+  },
+  {
+   "district": "Sitamarhi",
+   "year_2018_19": "480",
+   "year_2019_20": "507",
+   "year_2020_21": "603",
+   "year_2021_22": "652",
+   "year_2022_23": "727",
+   "year_2023_24": "778",
+   "year_2024_25": "830"
+  },
+  {
+   "district": "Siwan",
+   "year_2018_19": "641",
+   "year_2019_20": "705",
+   "year_2020_21": "720",
+   "year_2021_22": "789",
+   "year_2022_23": "830",
+   "year_2023_24": "887",
+   "year_2024_25": "981"
+  },
+  {
+   "district": "Supaul",
+   "year_2018_19": "320",
+   "year_2019_20": "361",
+   "year_2020_21": "424",
+   "year_2021_22": "461",
+   "year_2022_23": "496",
+   "year_2023_24": "521",
+   "year_2024_25": "579"
+  },
+  {
+   "district": "Vaishali",
+   "year_2018_19": "733",
+   "year_2019_20": "799",
+   "year_2020_21": "892",
+   "year_2021_22": "914",
+   "year_2022_23": "1011",
+   "year_2023_24": "1031",
+   "year_2024_25": "1206"
+  },
+  {
+   "district": "W. Champaran",
+   "year_2018_19": "615",
+   "year_2019_20": "684",
+   "year_2020_21": "770",
+   "year_2021_22": "825",
+   "year_2022_23": "894",
+   "year_2023_24": "957",
+   "year_2024_25": "1037"
+  }
+ ],
+ "fetched_at": "2026-11-19T08:30:00+05:30",
+ "source": "BiharInfraTales open data (CC BY 4.0) - biharinfratales.com/energy"
+}

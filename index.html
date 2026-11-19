@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bihar Power Demand Status</title>
+<meta name="description" content="Live Bihar power demand from SLDC (BSPTCL) SCADA: demand met, NBPDCL / SBPDCL split, drawl vs schedule, frequency, previous-day peak and long-term trends.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231e3a5f'/%3E%3Cpath d='M13 3 6 14h5l-1 7 7-11h-5z' fill='%23fff'/%3E%3C/svg%3E">
+<script src="assets/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f7fa; --card:#ffffff; --line:#e3e7ec; --line-soft:#eef1f4;
+    --ink:#0f1b2d; --ink-2:#465467; --ink-3:#6b7889;
+    --navy:#1e3a5f; --navy-tint:#eef3f9;
+    --demand:#2a78d6; --drawl:#eb6834; --sched:#8a94a3;
+    --sb:#2a78d6; --nb:#eb6834;
+    --good:#0b7d3e; --good-bg:#e8f5ee; --warn:#a15c00; --warn-bg:#fdf3e1; --bad:#b42323; --bad-bg:#fbeaea;
+    --r:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:14.5px/1.5 Inter,"Segoe UI",Roboto,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  .num{font-variant-numeric:tabular-nums}
+  a{color:var(--navy)}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+  /* header */
+  header{background:#fff;border-bottom:1px solid var(--line)}
+  .hdr{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px;max-width:1240px;margin:0 auto;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--navy);display:grid;place-items:center}
+  .brand h1{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .brand p{margin:0;font-size:12.5px;color:var(--ink-3)}
+  .status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-weight:600;font-size:12.5px}
+  .pill i{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+  .pill.live{background:var(--good-bg);color:var(--good)} .pill.live i{animation:pulse 2s infinite}
+  .pill.delayed{background:var(--warn-bg);color:var(--warn)}
+  .pill.stale{background:var(--bad-bg);color:var(--bad)}
+  @keyframes pulse{50%{opacity:.35}}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink-2);border-radius:8px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+  .btn:hover{background:var(--navy-tint);color:var(--navy)}
+
+  main{padding:22px 0 40px}
+  section{margin-bottom:26px}
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px;flex-wrap:wrap}
+  .sec-h h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)}
+  .sec-h span{font-size:12.5px;color:var(--ink-3)}
+
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g21{grid-template-columns:2fr 1fr}
+  @media(max-width:1000px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3,.g21{grid-template-columns:1fr}}
+  @media(max-width:620px){.g4,.g2{grid-template-columns:1fr}.hdr{padding:12px 16px}.wrap{padding:0 14px}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+  .card h3{margin:0 0 2px;font-size:15px;font-weight:650}
+  .card .sub{margin:0 0 12px;font-size:12.5px;color:var(--ink-3)}
+
+  /* KPI */
+  .kpi .lbl{font-size:12.5px;color:var(--ink-2);font-weight:600;display:flex;justify-content:space-between;gap:8px}
+  .kpi .val{font-size:32px;font-weight:700;letter-spacing:-.02em;margin:6px 0 2px;line-height:1.1}
+  .kpi .val small{font-size:14px;font-weight:600;color:var(--ink-3);margin-left:4px}
+  .kpi .note{font-size:12.5px;color:var(--ink-3)}
+  .kpi .note b{color:var(--ink);font-weight:600}
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
+  .tag.good{background:var(--good-bg);color:var(--good)} .tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.bad{background:var(--bad-bg);color:var(--bad)} .tag.info{background:var(--navy-tint);color:var(--navy)}
+  .kpi.hero{border-top:3px solid var(--demand)}
+
+  .split{margin-top:10px}
+  .split .bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--line-soft);gap:2px}
+  .split .bar div{height:100%}
+  .split .lg{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin-top:5px}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+  .fband{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--bad-bg) 0 30%,var(--good-bg) 30% 70%,var(--bad-bg) 70%);margin-top:12px}
+  .fband b{position:absolute;top:-3px;width:3px;height:14px;border-radius:2px;background:var(--ink)}
+  .fband-l{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:4px}
+
+  /* charts */
+  .chart{position:relative;height:300px}
+  .chart.sm{height:230px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:-4px 0 8px}
+  .legend .ln{display:inline-block;width:16px;height:0;border-top:2px solid;margin-right:6px;vertical-align:3px}
+  .legend .ln.dash{border-top-style:dashed}
+  .empty{display:grid;place-items:center;height:100%;color:var(--ink-3);font-size:13px;text-align:center;padding:0 20px;border:1px dashed var(--line);border-radius:10px}
+
+  /* rows / tables */
+  .rows{display:grid;gap:0}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px}
+  .row:last-child{border-bottom:0}
+  .row span{color:var(--ink-2)}
+  .row b{font-weight:600}
+  .big2{display:flex;gap:20px;margin:4px 0 10px;flex-wrap:wrap}
+  .big2 div{flex:1;min-width:130px}
+  .big2 .k{font-size:12px;color:var(--ink-3);font-weight:600}
+  .big2 .v{font-size:24px;font-weight:700;letter-spacing:-.01em}
+  .big2 .v small{font-size:13px;color:var(--ink-3);font-weight:600}
+  .big2 .t{font-size:12.5px;color:var(--ink-2)}
+
+  .discom{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .dc{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .dc h4{margin:0 0 6px;font-size:13px;display:flex;align-items:center;gap:7px}
+  .dc .v{font-size:24px;font-weight:700}
+  .dc .v small{font-size:13px;color:var(--ink-3);font-weight:600}
+  .dc .r{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-2);padding-top:5px}
+  .dc .r b{white-space:nowrap}
+  .dc .r b{color:var(--ink);font-weight:600}
+  @media(max-width:620px){.discom{grid-template-columns:1fr}}
+
+  .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .tile{background:#fafbfc;border:1px solid var(--line-soft);border-radius:10px;padding:10px 12px}
+  .tile .k{font-size:12px;color:var(--ink-3)}
+  .tile .v{font-size:19px;font-weight:700}
+  .tile .v small{font-size:12px;color:var(--ink-3);font-weight:600;margin-left:3px}
+  @media(max-width:620px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+  .mix .m{display:grid;grid-template-columns:130px 1fr 52px;align-items:center;gap:10px;padding:5px 0;font-size:13px}
+  .mix .track{height:8px;background:var(--line-soft);border-radius:4px;overflow:hidden}
+  .mix .track div{height:100%;border-radius:4px;background:var(--navy)}
+  .mix .m .p{text-align:right;font-weight:600}
+
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .tools input{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;width:180px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{border:0;background:#fff;padding:6px 11px;font:inherit;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+  .seg button.on{background:var(--navy);color:#fff}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:7px 10px;border-bottom:1px solid var(--line-soft)}
+  td.r,th.r{text-align:right}
+  tr:hover td{background:#fafbfc}
+  .barcell{display:flex;align-items:center;gap:8px}
+  .barcell .track{flex:1;height:7px;background:var(--line-soft);border-radius:4px;overflow:hidden;min-width:60px}
+  .barcell .track div{height:100%;background:var(--demand);border-radius:4px}
+  .pos{color:var(--good);font-weight:600}
+  .more{display:block;margin:10px auto 0}
+  @media(max-width:620px){.hide-m{display:none}}
+
+  footer{border-top:1px solid var(--line);background:#fff;padding:18px 0;font-size:12.5px;color:var(--ink-3)}
+  footer p{margin:4px 0}
+  .warnbox{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <div class="brand">
+      <div class="logo"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M13 3 6 14h5l-1 7 7-11h-5z" fill="#fff"/></svg></div>
+      <div>
+        <h1>Bihar Power Demand Status</h1>
+        <p>State grid position from SLDC Bihar (BSPTCL) SCADA</p>
+      </div>
+    </div>
+    <div class="status">
+      <span id="pill" class="pill stale"><i></i><span>Loading…</span></span>
+      <span id="readingAt" class="num">—</span>
+      <button class="btn" id="refresh" title="Reload the latest collected data">↻ Refresh</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="warn" class="warnbox"></div>
+
+  <!-- LIVE -->
+  <section>
+    <div class="sec-h"><h2>Right now</h2><span id="liveNote">SCADA reading</span></div>
+    <div class="grid g4">
+      <div class="card kpi hero">
+        <div class="lbl">Demand met</div>
+        <div class="val num" id="kDemand">—<small>MW</small></div>
+        <div class="note" id="kDemandNote">&nbsp;</div>
+        <div class="split" id="kSplit"></div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">Drawl vs schedule <span id="kDevTag"></span></div>
+        <div class="val num" id="kDrawl">—<small>MW</small></div>
+        <div class="note" id="kDrawlNote">&nbsp;</div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">State's own generation</div>
+        <div class="val num" id="kGen">—<small>MW</small></div>
+        <div class="note" id="kGenNote">&nbsp;</div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">Grid frequency <span id="kFreqTag"></span></div>
+        <div class="val num" id="kFreq">—<small>Hz</small></div>
+        <div class="fband"><b id="kFreqMark" style="left:50%"></b></div>
+        <div class="fband-l"><span>49.80</span><span>IEGC band 49.90 – 50.05</span><span>50.20</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TODAY + DISCOM -->
+  <section>
+    <div class="grid g21">
+      <div class="card">
+        <h3>Today's load curve</h3>
+        <p class="sub" id="todaySub">Demand met, actual drawl and drawl schedule (MW)</p>
+        <div class="legend">
+          <span><i class="ln" style="border-color:var(--demand)"></i>Demand met</span>
+          <span><i class="ln" style="border-color:var(--drawl)"></i>Actual drawl</span>
+          <span><i class="ln dash" style="border-color:var(--sched)"></i>Drawl schedule</span>
+        </div>
+        <div class="chart"><canvas id="cToday"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>DISCOM-wise position</h3>
+        <p class="sub">SBPDCL and NBPDCL, current SCADA reading</p>
+        <div class="discom" id="discom"></div>
+        <p class="sub" style="margin:12px 0 0" id="discomNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREVIOUS DAY -->
+  <section>
+    <div class="sec-h"><h2>Previous day</h2><span id="prevDate">—</span></div>
+    <div class="grid g3">
+      <div class="card">
+        <h3>Peak demand</h3>
+        <div class="big2">
+          <div><div class="k">Maximum</div><div class="v num" id="pMax">—</div><div class="t" id="pMaxT"></div></div>
+          <div><div class="k">Minimum</div><div class="v num" id="pMin">—</div><div class="t" id="pMinT"></div></div>
+        </div>
+        <div class="rows">
+          <div class="row"><span>Min / max ratio</span><b class="num" id="pRatio">—</b></div>
+          <div class="row"><span>Peak vs all-time record</span><b class="num" id="pRec">—</b></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Availability at peak</h3>
+        <div class="big2">
+          <div><div class="k">Availability</div><div class="v num" id="pAv">—</div><div class="t">at time of maximum demand</div></div>
+          <div><div class="k">Margin</div><div class="v num" id="pMargin">—</div><div class="t" id="pMarginT"></div></div>
+        </div>
+        <div class="rows">
+          <div class="row"><span>Frequency at peak</span><b class="num" id="pFreq">—</b></div>
+          <div class="row"><span>Solar energy (prev. day)</span><b class="num" id="pSolar">—</b></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>DISCOM share at peak</h3>
+        <div class="big2">
+          <div><div class="k"><i class="sw" style="background:var(--sb)"></i>SBPDCL</div><div class="v num" id="pSB">—</div><div class="t" id="pSBp"></div></div>
+          <div><div class="k"><i class="sw" style="background:var(--nb)"></i>NBPDCL</div><div class="v num" id="pNB">—</div><div class="t" id="pNBp"></div></div>
+        </div>
+        <div class="split"><div class="bar" id="pSplit"></div></div>
+        <p class="sub" style="margin:10px 0 0">At minimum: SBPDCL <b class="num" id="pSBmin">—</b>, NBPDCL <b class="num" id="pNBmin">—</b></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TREND -->
+  <section>
+    <div class="sec-h"><h2>Daily trend</h2>
+      <div class="tools"><div class="seg" id="rangeSeg"><button data-d="30" class="on">30 days</button><button data-d="90">90 days</button><button data-d="365">1 year</button><button data-d="0">All</button></div></div>
+    </div>
+    <div class="card">
+      <h3>Daily maximum and minimum demand met</h3>
+      <p class="sub" id="trendSub">From the SLDC previous-day report, collected every day (MW)</p>
+      <div class="legend">
+        <span><i class="ln" style="border-color:var(--demand)"></i>Maximum demand</span>
+        <span><i class="ln" style="border-color:var(--sched)"></i>Minimum demand</span>
+      </div>
+      <div class="chart sm"><canvas id="cDaily"></canvas></div>
+    </div>
+  </section>
+
+  <!-- CONTEXT -->
+  <section>
+    <div class="sec-h"><h2>Long-term picture</h2><span id="refNote"></span></div>
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="card">
+        <h3>Annual energy requirement vs availability</h3>
+        <p class="sub" id="dsSub">Million units (MU) a year</p>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--demand)"></i>Requirement</span>
+          <span><i class="sw" style="background:#9ec5f4"></i>Availability</span>
+        </div>
+        <div class="chart sm"><canvas id="cDS"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Per-capita consumption</h3>
+        <p class="sub" id="pcSub">kWh per person, by year</p>
+        <div class="chart sm"><canvas id="cPC"></canvas></div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Grid at a glance</h3>
+        <p class="sub" id="infraSub">Network and consumer base</p>
+        <div class="tiles" id="tiles"></div>
+      </div>
+      <div class="card">
+        <h3>Generation portfolio</h3>
+        <p class="sub">Share of contracted capacity by source</p>
+        <div class="mix" id="mix"></div>
+        <p class="sub" style="margin:12px 0 0" id="rts"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISTRICTS -->
+  <section>
+    <div class="sec-h"><h2>District-wise consumption</h2>
+      <div class="tools">
+        <input id="dq" type="search" placeholder="Find a district">
+        <div class="seg" id="dSort"><button data-s="use" class="on">Highest use</button><button data-s="growth">Fastest growth</button></div>
+      </div>
+    </div>
+    <div class="card" style="padding:6px 8px 12px">
+      <table>
+        <thead><tr><th style="width:40px">#</th><th>District</th><th>Consumption 2024-25 (MU)</th><th class="r hide-m">Trend</th><th class="r">Growth since 2018-19</th></tr></thead>
+        <tbody id="dBody"></tbody>
+      </table>
+      <button class="btn more" id="dMore">Show all 38 districts</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Sources.</b> Live and previous-day figures: <a href="https://sldc.bsptcl.co.in" target="_blank" rel="noopener">State Load Despatch Centre, Bihar (BSPTCL)</a> public SCADA feed. Yearly reference data: <a href="https://biharinfratales.com/energy" target="_blank" rel="noopener">BiharInfraTales</a> (CC BY 4.0).</p>
+    <p>Data is collected automatically every 30 minutes. Download: <a href="data/daily.csv">daily peaks (CSV)</a> · <a id="histLink" href="#">this month's readings (CSV)</a>. <span id="fetchedAt"></span></p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const IN = (v, d = 0) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('en-IN', {minimumFractionDigits: d, maximumFractionDigits: d});
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const C = {demand: css('--demand'), drawl: css('--drawl'), sched: css('--sched'), sb: css('--sb'), nb: css('--nb'), ink3: css('--ink-3'), line: css('--line-soft')};
+  const fmtTime = d => d.toLocaleString('en-IN', {timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true});
+  const hhmm = iso => iso.slice(11, 16);
+  const ago = ms => { const m = Math.round(ms / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.floor(m / 60)} h ${m % 60} min ago`; };
+  const bust = u => u + (u.includes('?') ? '&' : '?') + 't=' + Date.now();
+  async function getJSON(u) { const r = await fetch(bust(u)); if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); }
+  async function getCSV(u) {
+    const r = await fetch(bust(u)); if (!r.ok) return [];
+    const [h, ...rows] = (await r.text()).trim().split(/\r?\n/);
+    const k = h.split(',');
+    return rows.map(l => { const v = l.split(','); return Object.fromEntries(k.map((c, i) => [c, v[i]])); });
+  }
+
+  // Chart.js defaults: recessive grid, thin marks, crosshair tooltip
+  Chart.defaults.font.family = 'Inter, "Segoe UI", Roboto, system-ui, sans-serif';
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = C.ink3;
+  Chart.defaults.plugins.legend.display = false;
+  Object.assign(Chart.defaults.plugins.tooltip, {backgroundColor: '#0f1b2d', padding: 10, cornerRadius: 8, boxPadding: 4, usePointStyle: true});
+  const axes = (yTitle) => ({
+    x: {grid: {display: false}, border: {color: C.line}, ticks: {maxRotation: 0, autoSkipPadding: 14}},
+    y: {grid: {color: C.line}, border: {display: false}, title: {display: !!yTitle, text: yTitle}, ticks: {callback: v => IN(v)}}
+  });
+  const charts = {};
+  function draw(id, cfg) { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); }
+  function emptyChart(id, msg) { charts[id]?.destroy(); delete charts[id]; const p = $(id).parentElement; p.innerHTML = `<div class="empty">${msg}</div><canvas id="${id}" hidden></canvas>`; }
+
+  let REF = {}, DAILY = [], LIVE = {};
+
+  // ---------------- live
+  function renderLive(live) {
+    LIVE = live;
+    const L = live.latest || {};
+    const ts = L.ts ? new Date(L.ts) : null;
+    const age = ts ? Date.now() - ts.getTime() : Infinity;
+    const pill = $('pill');
+    const state = age < 45 * 60e3 ? ['live', 'Live'] : age < 3 * 3600e3 ? ['delayed', 'Delayed'] : ['stale', 'Not updated'];
+    pill.className = 'pill ' + state[0]; pill.querySelector('span').textContent = state[1];
+    $('readingAt').textContent = ts ? `SCADA ${fmtTime(ts)} · ${ago(age)}` : 'No reading yet';
+    $('liveNote').textContent = ts ? `Reading at ${fmtTime(ts)}` : '';
+    if (live.errors?.length && !live.latest_is_fresh) {
+      $('warn').style.display = 'block';
+      $('warn').textContent = 'SLDC did not respond on the last collection run. Figures below are from the last good reading.';
+    } else $('warn').style.display = 'none';
+
+    // KPI 1 demand
+    const today = (live.today || []).filter(p => p.demand != null);
+    const peak = today.reduce((a, p) => !a || p.demand > a.demand ? p : a, null);
+    $('kDemand').innerHTML = `${IN(L.DemandMet)}<small>MW</small>`;
+    $('kDemandNote').innerHTML = peak && today.length > 1 ? `Today's peak so far <b>${IN(peak.demand)} MW</b> at ${hhmm(peak.ts)}` : `Today's peak builds up as readings come in`;
+    const nb = L.NB_DEMAND_MET, sb = L.SB_DEMAND_MET;
+    if (nb != null && sb != null && nb + sb > 0) {
+      const s = sb / (nb + sb) * 100;
+      $('kSplit').innerHTML = `<div class="bar"><div style="width:${s}%;background:var(--sb)"></div><div style="width:${100 - s}%;background:var(--nb)"></div></div>
+        <div class="lg"><span><i class="sw" style="background:var(--sb)"></i>SBPDCL ${IN(sb)} MW</span><span><i class="sw" style="background:var(--nb)"></i>NBPDCL ${IN(nb)} MW</span></div>`;
+    }
+
+    // KPI 2 drawl
+    const dev = L.Deviation ?? (L.Actual != null && L.Scheduled != null ? L.Actual - L.Scheduled : null);
+    $('kDrawl').innerHTML = `${IN(L.Actual)}<small>MW</small>`;
+    $('kDrawlNote').innerHTML = `Schedule <b>${IN(L.Scheduled)} MW</b>${dev != null ? ` · deviation <b>${dev > 0 ? '+' : ''}${IN(dev)} MW</b>` : ''}`;
+    if (dev != null) {
+      const big = Math.abs(dev) > 250;
+      $('kDevTag').innerHTML = dev < 0 ? `<span class="tag ${big ? 'warn' : 'info'}">▼ Under-drawl</span>` : `<span class="tag ${big ? 'bad' : 'warn'}">▲ Over-drawl</span>`;
+    }
+
+    // KPI 3 generation
+    $('kGen').innerHTML = `${IN(L.StateGeneration)}<small>MW</small>`;
+    const share = L.StateGeneration != null && L.DemandMet ? L.StateGeneration / L.DemandMet * 100 : null;
+    $('kGenNote').innerHTML = `Thermal <b>${IN(L.ThermalGeneration)} MW</b>${share != null ? ` · meets <b>${IN(share)}%</b> of demand` : ''}${L.RAILWAY_DRAWL != null ? `<br>Railway drawl ${IN(L.RAILWAY_DRAWL)} MW` : ''}`;
+
+    // KPI 4 frequency
+    const f = L.Freq;
+    $('kFreq').innerHTML = `${IN(f, 2)}<small>Hz</small>`;
+    if (f != null) {
+      const pos = Math.min(100, Math.max(0, (f - 49.8) / 0.4 * 100));
+      $('kFreqMark').style.left = `calc(${pos}% - 1px)`;
+      const inBand = f >= 49.9 && f <= 50.05;
+      $('kFreqTag').innerHTML = inBand ? '<span class="tag good">✓ In band</span>' : `<span class="tag warn">! ${f < 49.9 ? 'Low' : 'High'}</span>`;
+    }
+
+    // DISCOM cards
+    const dcard = (name, color, dem, dwl, sch) => {
+      const d = dwl != null && sch != null ? dwl - sch : null;
+      return `<div class="dc"><h4><i class="sw" style="background:${color}"></i>${name}</h4>
+        <div class="v num">${IN(dem)}<small> MW</small></div>
+        <div class="r"><span>Net drawl</span><b class="num">${IN(dwl)} MW</b></div>
+        <div class="r"><span>Net schedule</span><b class="num">${IN(sch)} MW</b></div>
+        <div class="r"><span>Deviation</span><b class="num">${d == null ? '—' : (d > 0 ? '+' : '') + IN(d) + ' MW'}</b></div></div>`;
+    };
+    $('discom').innerHTML = dcard('SBPDCL', 'var(--sb)', sb, L.SB_NET_DWL, L.SB_NET_SCHD) + dcard('NBPDCL', 'var(--nb)', nb, L.NB_NET_DWL, L.NB_NET_SCHD);
+    const gap = L.DemandMet != null && nb != null && sb != null ? L.DemandMet - nb - sb : null;
+    $('discomNote').textContent = gap != null && Math.abs(gap) > 1 ? `Demand met shown per DISCOM as reported by SCADA. State total differs from their sum by ${IN(gap)} MW (other drawals and losses as metered by SLDC).` : '';
+
+    // today chart
+    if (today.length >= 2) {
+      draw('cToday', {
+        type: 'line',
+        data: {labels: today.map(p => hhmm(p.ts)), datasets: [
+          {label: 'Demand met', data: today.map(p => p.demand), borderColor: C.demand, backgroundColor: C.demand + '14', fill: true, borderWidth: 2, pointRadius: 0, tension: .25},
+          {label: 'Actual drawl', data: today.map(p => p.drawl), borderColor: C.drawl, borderWidth: 2, pointRadius: 0, tension: .25},
+          {label: 'Drawl schedule', data: today.map(p => p.schedule), borderColor: C.sched, borderDash: [5, 4], borderWidth: 1.6, pointRadius: 0, stepped: true}
+        ]},
+        options: {maintainAspectRatio: false, interaction: {mode: 'index', intersect: false},
+          scales: axes('MW'), plugins: {tooltip: {callbacks: {label: c => ` ${c.dataset.label}: ${IN(c.raw)} MW`}}}}
+      });
+      $('todaySub').textContent = `${today.length} readings today · demand met, actual drawl and schedule (MW)`;
+    } else {
+      emptyChart('cToday', today.length ? `One reading so far today: ${IN(today[0].demand)} MW at ${hhmm(today[0].ts)}.<br>The curve fills in with each 30-minute collection run.` : 'No readings collected yet today.');
+    }
+
+    // previous day
+    const P = live.previous_day;
+    if (P && P.max) {
+      const d = new Date(P.date + 'T00:00:00+05:30');
+      $('prevDate').textContent = d.toLocaleDateString('en-IN', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+      $('pMax').innerHTML = `${IN(P.max.demand)}<small> MW</small>`; $('pMaxT').textContent = P.max.time ? `at ${P.max.time.slice(0, 5)}` : '';
+      $('pMin').innerHTML = `${IN(P.min.demand)}<small> MW</small>`; $('pMinT').textContent = P.min.time ? `at ${P.min.time.slice(0, 5)}` : '';
+      $('pRatio').textContent = P.max.demand ? IN(P.min.demand / P.max.demand * 100) + '%' : '—';
+      $('pAv').innerHTML = `${IN(P.max.availability)}<small> MW</small>`;
+      const m = P.max.availability != null && P.max.demand != null ? P.max.availability - P.max.demand : null;
+      $('pMargin').innerHTML = m == null ? '—' : `${m > 0 ? '+' : ''}${IN(m)}<small> MW</small>`;
+      $('pMarginT').innerHTML = m == null ? '' : m >= 0 ? `<span class="tag good">✓ Surplus ${IN(m / P.max.demand * 100, 1)}%</span>` : `<span class="tag bad">! Shortfall</span>`;
+      $('pFreq').textContent = P.max.freq != null ? IN(P.max.freq, 2) + ' Hz' : '—';
+      $('pSolar').textContent = P.solar_mu != null ? IN(P.solar_mu, 2) + ' MU' : '—';
+      const tot = (P.max.nb || 0) + (P.max.sb || 0);
+      $('pSB').innerHTML = `${IN(P.max.sb)}<small> MW</small>`; $('pNB').innerHTML = `${IN(P.max.nb)}<small> MW</small>`;
+      if (tot) {
+        $('pSBp').textContent = IN(P.max.sb / tot * 100, 1) + '% of peak'; $('pNBp').textContent = IN(P.max.nb / tot * 100, 1) + '% of peak';
+        $('pSplit').innerHTML = `<div style="width:${P.max.sb / tot * 100}%;background:var(--sb)"></div><div style="width:${P.max.nb / tot * 100}%;background:var(--nb)"></div>`;
+      }
+      $('pSBmin').textContent = IN(P.min.sb) + ' MW'; $('pNBmin').textContent = IN(P.min.nb) + ' MW';
+      renderRecord();
+    }
+    $('fetchedAt').textContent = live.fetched_at ? `Last collection run: ${fmtTime(new Date(live.fetched_at))}.` : '';
+    const mon = (L.ts || new Date().toISOString()).slice(0, 7);
+    $('histLink').href = `data/history/${mon}.csv`;
+  }
+
+  function recordPeak() {
+    const k = (REF.kpis || []).find(x => /peak demand/i.test(x.metric));
+    return k ? {mw: parseFloat(k.value), note: (k.unit_note || '').replace(/^MW\s*/, '').replace(/[()]/g, '')} : null;
+  }
+  function renderRecord() {
+    const r = recordPeak(), P = LIVE.previous_day;
+    if (r && P?.max?.demand) $('pRec').textContent = `${IN(P.max.demand / r.mw * 100)}% of ${IN(r.mw)} MW`;
+  }
+
+  // ---------------- daily trend
+  let range = 30;
+  function renderDaily() {
+    let rows = DAILY.filter(r => r.max_demand_mw);
+    if (range) { const cut = new Date(Date.now() - range * 864e5).toISOString().slice(0, 10); rows = rows.filter(r => r.date >= cut); }
+    if (rows.length < 2) {
+      emptyChart('cDaily', rows.length ? `Collection started ${new Date(rows[0].date).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'})}: one day recorded (${IN(rows[0].max_demand_mw)} MW peak).<br>A new point is added every day.` : 'No daily records yet.');
+      return;
+    }
+    const lab = rows.map(r => new Date(r.date + 'T00:00:00').toLocaleDateString('en-IN', {day: 'numeric', month: 'short'}));
+    draw('cDaily', {
+      type: 'line',
+      data: {labels: lab, datasets: [
+        {label: 'Maximum demand', data: rows.map(r => +r.max_demand_mw), borderColor: C.demand, borderWidth: 2, pointRadius: rows.length > 40 ? 0 : 3, pointBackgroundColor: C.demand, tension: .2},
+        {label: 'Minimum demand', data: rows.map(r => +r.min_demand_mw), borderColor: C.sched, borderWidth: 2, pointRadius: rows.length > 40 ? 0 : 3, pointBackgroundColor: C.sched, tension: .2}
+      ]},
+      options: {maintainAspectRatio: false, interaction: {mode: 'index', intersect: false}, scales: axes('MW'),
+        plugins: {tooltip: {callbacks: {label: c => {
+          const r = rows[c.dataIndex], t = c.datasetIndex ? r.min_time : r.max_time;
+          return ` ${c.dataset.label}: ${IN(c.raw)} MW${t ? ' at ' + t.slice(0, 5) : ''}`; }}}}}
+    });
+    const best = rows.reduce((a, r) => +r.max_demand_mw > +a.max_demand_mw ? r : a);
+    $('trendSub').textContent = `Highest in this period: ${IN(best.max_demand_mw)} MW on ${new Date(best.date).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'})} (MW)`;
+  }
+  $('rangeSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    [...$('rangeSeg').children].forEach(x => x.classList.toggle('on', x === b));
+    range = +b.dataset.d; renderDaily();
+  });
+
+  // ---------------- reference
+  function renderRef() {
+    const ds = REF.demand_supply || [];
+    if (ds.length) {
+      const yrs = ds.map(r => r.year), dem = ds.map(r => +r.energy_demand_mu), av = ds.map(r => +r.energy_availability_mu);
+      draw('cDS', {type: 'bar', data: {labels: yrs, datasets: [
+        {label: 'Requirement', data: dem, backgroundColor: C.demand, borderRadius: 4, borderSkipped: 'start', categoryPercentage: .7, barPercentage: .9},
+        {label: 'Availability', data: av, backgroundColor: '#9ec5f4', borderRadius: 4, borderSkipped: 'start', categoryPercentage: .7, barPercentage: .9}
+      ]}, options: {maintainAspectRatio: false, interaction: {mode: 'index', intersect: false}, scales: axes('MU'),
+        plugins: {tooltip: {callbacks: {label: c => ` ${c.dataset.label}: ${IN(c.raw)} MU`, footer: it => { const i = it[0].dataIndex; return `Shortfall: ${IN((dem[i] - av[i]) / dem[i] * 100, 1)}%`; }}}}}});
+      const n = ds.length - 1, gr = (dem[n] / dem[0] - 1) * 100;
+      $('dsSub').textContent = `MU a year · ${yrs[n]} requirement ${IN(dem[n])} MU, shortfall ${IN((dem[n] - av[n]) / dem[n] * 100, 1)}% · up ${IN(gr)}% since ${yrs[0]}`;
+    }
+    const pc = REF.per_capita || [];
+    if (pc.length) {
+      const v = pc.map(r => +r.consumption_kwh);
+      draw('cPC', {type: 'bar', data: {labels: pc.map(r => r.year), datasets: [{label: 'kWh per person', data: v, backgroundColor: pc.map((_, i) => i === pc.length - 1 ? C.demand : '#b7d3f6'), borderRadius: 4, borderSkipped: 'start', categoryPercentage: .75}]},
+        options: {maintainAspectRatio: false, scales: axes('kWh'), plugins: {tooltip: {callbacks: {label: c => ` ${IN(c.raw)} kWh per person`}}}}});
+      const n = v.length - 1;
+      $('pcSub').textContent = `kWh per person · ${pc[n].year}: ${IN(v[n])} kWh (${v[n] >= v[n - 1] ? '+' : ''}${IN((v[n] / v[n - 1] - 1) * 100, 1)}% on previous year)`;
+    }
+    const K = Object.fromEntries((REF.kpis || []).map(k => [k.metric.toLowerCase(), k]));
+    const t = [['Consumers', 'consumer base', 'lakh'], ['Connected load', 'connected load', 'MW'], ['Record peak demand', 'peak demand', 'MW'], ['Grid substations', 'grid substations', ''],
+      ['Power substations', 'power substations', ''], ['Transmission lines', 'transmission line length', 'ckm'], ['Transformation capacity', 'transformation capacity', 'MVA'], ['Evacuation capacity', 'evacuation capacity', 'MVA']];
+    $('tiles').innerHTML = t.filter(x => K[x[1]]).map(([lab, key, u]) => `<div class="tile"><div class="k">${lab}</div><div class="v num">${IN(parseFloat(K[key].value))}<small>${u}</small></div></div>`).join('');
+    const r = recordPeak(); if (r?.note) $('infraSub').textContent = `Network and consumer base · record peak ${r.note}`;
+    const mix = (REF.portfolio || []).map(m => ({n: m.energy_source, v: +m.percentage_share})).sort((a, b) => b.v - a.v);
+    const mx = Math.max(...mix.map(m => m.v), 1);
+    $('mix').innerHTML = mix.map(m => `<div class="m"><span>${m.n}</span><div class="track"><div style="width:${m.v / mx * 100}%"></div></div><span class="p num">${IN(m.v, m.v % 1 ? 1 : 0)}%</span></div>`).join('');
+    const re = mix.filter(m => !/thermal/i.test(m.n)).reduce((a, m) => a + m.v, 0);
+    const rs = Object.fromEntries((REF.rooftop_solar || []).map(x => [x.parameter.toLowerCase(), x.value]));
+    const cap = Object.entries(rs).find(([k]) => k.includes('capacity')), inst = Object.entries(rs).find(([k]) => k.startsWith('installation (')), app = Object.entries(rs).find(([k]) => k.includes('application'));
+    $('rts').innerHTML = `Renewables are <b>${IN(re)}%</b> of the portfolio.` + (cap ? ` Rooftop solar: <b>${cap[1]} MW</b> from ${inst ? inst[1] : '—'} installations (${app ? app[1] : '—'} applications).` : '');
+    $('refNote').textContent = REF.fetched_at ? `Reference data as of ${new Date(REF.fetched_at).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'})}` : '';
+    renderRecord();
+    renderDistricts();
+  }
+
+  // ---------------- districts
+  let dSort = 'use', dAll = false;
+  function spark(vals) {
+    const w = 80, h = 22, mn = Math.min(...vals), mx = Math.max(...vals), sx = w / (vals.length - 1);
+    const pts = vals.map((v, i) => `${(i * sx).toFixed(1)},${(h - 2 - (v - mn) / (mx - mn || 1) * (h - 4)).toFixed(1)}`).join(' ');
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${C.demand}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+  }
+  function renderDistricts() {
+    const raw = REF.district_consumption || [];
+    if (!raw.length) return;
+    const keys = Object.keys(raw[0]).filter(k => k.startsWith('year_')).sort();
+    let rows = raw.map(r => { const v = keys.map(k => +r[k]); return {d: r.district, v, now: v[v.length - 1], g: (v[v.length - 1] / v[0] - 1) * 100}; });
+    const mx = Math.max(...rows.map(r => r.now));
+    rows.sort((a, b) => dSort === 'use' ? b.now - a.now : b.g - a.g);
+    rows.forEach((r, i) => r.rank = i + 1);
+    const q = $('dq').value.trim().toLowerCase();
+    let show = q ? rows.filter(r => r.d.toLowerCase().includes(q)) : rows;
+    if (!q && !dAll) show = show.slice(0, 12);
+    $('dBody').innerHTML = show.map(r => `<tr><td class="num">${r.rank}</td><td>${r.d}</td>
+      <td><div class="barcell"><div class="track"><div style="width:${r.now / mx * 100}%"></div></div><span class="num" style="width:52px;text-align:right">${IN(r.now)}</span></div></td>
+      <td class="r hide-m">${spark(r.v)}</td><td class="r num pos">+${IN(r.g)}%</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--ink-3)">No district matches.</td></tr>';
+    $('dMore').style.display = q ? 'none' : 'block';
+    $('dMore').textContent = dAll ? 'Show top 12' : `Show all ${rows.length} districts`;
+  }
+  $('dq').addEventListener('input', renderDistricts);
+  $('dMore').addEventListener('click', () => { dAll = !dAll; renderDistricts(); });
+  $('dSort').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; [...$('dSort').children].forEach(x => x.classList.toggle('on', x === b)); dSort = b.dataset.s; renderDistricts(); });
+
+  // ---------------- load
+  async function loadLive() {
+    try { renderLive(await getJSON('data/live.json')); } catch (e) { $('readingAt').textContent = 'Could not load data'; console.error(e); }
+    try { DAILY = await getCSV('data/daily.csv'); renderDaily(); } catch (e) { console.error(e); }
+  }
+  async function loadAll() {
+    try { REF = await getJSON('data/reference.json'); renderRef(); } catch (e) { console.error(e); }
+    await loadLive();
+  }
+  $('refresh').addEventListener('click', loadLive);
+  loadAll();
+  setInterval(loadLive, 5 * 60e3);
+  setInterval(() => LIVE.latest && renderLive(LIVE), 60e3); // keep "x min ago" honest
+})();
+</script>
+</body>
+</html>
