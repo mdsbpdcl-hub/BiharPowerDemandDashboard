@@ -326,7 +326,7 @@
 <footer>
   <div class="wrap">
     <p><b>Sources.</b> Live and previous-day figures: <a href="https://sldc.bsptcl.co.in" target="_blank" rel="noopener">State Load Despatch Centre, Bihar (BSPTCL)</a> public SCADA feed. Yearly figures: Central Electricity Authority, Ministry of Power (PIB) and Bihar Economic Survey, as named under each figure.</p>
-    <p>Data is collected automatically every 30 minutes. Download: <a href="data/daily.csv">daily peaks (CSV)</a> · <a id="histLink" href="#">this month's readings (CSV)</a>. <span id="fetchedAt"></span></p>
+    <p>Data is collected automatically every 30 minutes. Download: <a href="data/daily.csv">daily peaks (CSV)</a> · <a id="histLink" href="#">today's readings (CSV)</a>. <span id="fetchedAt"></span></p>
   </div>
 </footer>
 
@@ -359,15 +359,14 @@
     y: {grid: {color: C.line}, border: {display: false}, title: {display: !!yTitle, text: yTitle}, ticks: {callback: v => IN(v)}}
   });
   const charts = {};
-  function draw(id, cfg) { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); }
-  function emptyChart(id, msg) { charts[id]?.destroy(); delete charts[id]; const p = $(id).parentElement; p.innerHTML = `<div class="empty">${msg}</div><canvas id="${id}" hidden></canvas>`; }
+  function draw(id, cfg) { charts[id]?.destroy(); const c = $(id); c.hidden = false; c.parentElement.querySelector('.empty')?.remove(); charts[id] = new Chart(c, cfg); }
+  function emptyChart(id, msg) { charts[id]?.destroy(); delete charts[id]; const c = $(id), p = c.parentElement; c.hidden = true; let e = p.querySelector('.empty'); if (!e) { e = document.createElement('div'); e.className = 'empty'; p.prepend(e); } e.innerHTML = msg; }
 
   let REF = {}, DAILY = [], LIVE = {};
 
   // ---------------- live
-  function renderLive(live) {
-    LIVE = live;
-    const L = live.latest || {};
+  function renderStatus() {
+    const L = LIVE.latest || {};
     const ts = L.ts ? new Date(L.ts) : null;
     const age = ts ? Date.now() - ts.getTime() : Infinity;
     const pill = $('pill');
@@ -375,6 +374,11 @@
     pill.className = 'pill ' + state[0]; pill.querySelector('span').textContent = state[1];
     $('readingAt').textContent = ts ? `SCADA ${fmtTime(ts)} · ${ago(age)}` : 'No reading yet';
     $('liveNote').textContent = ts ? `Reading at ${fmtTime(ts)}` : '';
+  }
+  function renderLive(live) {
+    LIVE = live;
+    const L = live.latest || {};
+    renderStatus();
     if (live.errors?.length && !live.latest_is_fresh) {
       $('warn').style.display = 'block';
       $('warn').textContent = 'SLDC did not respond on the last collection run. Figures below are from the last good reading.';
@@ -470,8 +474,8 @@
       renderRecord();
     }
     $('fetchedAt').textContent = live.fetched_at ? `Last collection run: ${fmtTime(new Date(live.fetched_at))}.` : '';
-    const mon = (L.ts || new Date().toISOString()).slice(0, 7);
-    $('histLink').href = `data/history/${mon}.csv`;
+    const day = (L.ts || new Date().toISOString()).slice(0, 10);
+    $('histLink').href = `data/history/${day.slice(0, 7)}/${day}.csv`;
   }
 
   // Record = official record, or a higher daily maximum collected from SLDC since then
@@ -578,7 +582,7 @@
     if (!q && !dAll) show = show.slice(0, 12);
     $('dBody').innerHTML = show.map(r => `<tr><td class="num">${r.rank}</td><td>${r.d}</td>
       <td><div class="barcell"><div class="track"><div style="width:${r.now / mx * 100}%"></div></div><span class="num" style="width:52px;text-align:right">${IN(r.now)}</span></div></td>
-      <td class="r hide-m">${spark(r.v)}</td><td class="r num pos">+${IN(r.g)}%</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--ink-3)">No district matches.</td></tr>';
+      <td class="r hide-m">${spark(r.v)}</td><td class="r num ${r.g >= 0 ? 'pos' : ''}">${r.g >= 0 ? '+' : ''}${IN(r.g)}%</td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--ink-3)">No district matches.</td></tr>';
     $('dMore').style.display = q ? 'none' : 'block';
     $('dMore').textContent = dAll ? 'Show top 12' : `Show all ${rows.length} districts`;
   }
@@ -598,7 +602,7 @@
   $('refresh').addEventListener('click', loadLive);
   loadAll();
   setInterval(loadLive, 5 * 60e3);
-  setInterval(() => LIVE.latest && renderLive(LIVE), 60e3); // keep "x min ago" honest
+  setInterval(() => LIVE.latest && renderStatus(), 60e3); // keep "x min ago" honest
 })();
 </script>
 </body>

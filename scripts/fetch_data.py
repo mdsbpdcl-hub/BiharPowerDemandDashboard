@@ -15,7 +15,7 @@ Sources
 
 Outputs (all inside data/)
   live.json              latest SCADA reading + previous-day report + today's curve
-  history/YYYY-MM.csv    one row per new SCADA reading (builds the intraday record)
+  history/YYYY-MM/YYYY-MM-DD.csv   one row per SCADA reading, one file per day
   daily.csv              one row per day: previous-day max / min demand etc.
   reference.json         official yearly figures (edited by hand, not touched here)
 """
@@ -125,8 +125,8 @@ def num(v):
 
 def scada_dt(d, t):
     """SCADA Date 'DDMMYY' + Time 'HHMMSS' -> aware IST datetime."""
-    d = str(d or "")
-    t = str(t or "").zfill(6)
+    d = str(d if d is not None else "").split(".")[0].zfill(6)
+    t = str(t if t is not None else "").split(".")[0].zfill(6)
     if not (re.fullmatch(r"\d{6}", d) and re.fullmatch(r"\d{6}", t)):
         return None
     try:
@@ -174,12 +174,13 @@ HIST_COLS = ["ts"] + FIELDS
 def append_history(readings):
     """Append readings not already stored. Returns number added."""
     os.makedirs(HIST_DIR, exist_ok=True)
-    by_month = {}
+    by_day = {}
     for r in readings:
-        by_month.setdefault(r["ts"][:7], []).append(r)
+        by_day.setdefault(r["ts"][:10], []).append(r)
     added = 0
-    for month, rows in by_month.items():
-        path = os.path.join(HIST_DIR, f"{month}.csv")
+    for day, rows in by_day.items():
+        path = os.path.join(HIST_DIR, day[:7], f"{day}.csv")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         seen = set()
         if os.path.exists(path):
             with open(path, newline="", encoding="utf-8") as f:
@@ -198,7 +199,7 @@ def append_history(readings):
 
 
 def load_history_for(day_prefix):
-    path = os.path.join(HIST_DIR, f"{day_prefix[:7]}.csv")
+    path = os.path.join(HIST_DIR, day_prefix[:7], f"{day_prefix[:10]}.csv")
     if not os.path.exists(path):
         return []
     with open(path, newline="", encoding="utf-8") as f:
@@ -329,6 +330,18 @@ def update_live():
          "freq": r["Freq"]}
         for r in sorted(today.values(), key=lambda r: r["ts"]) if r.get("DemandMet") is not None
     ]
+
+    if len(curve) > 300:
+        last = curve[-1]
+        seen_slots, thin = set(), []
+        for p in curve:
+            slot = p["ts"][11:15] + str(int(p["ts"][15]) // 5)  # HH:M + 5-min bucket
+            if slot not in seen_slots:
+                seen_slots.add(slot)
+                thin.append(p)
+        if thin[-1] is not last:
+            thin.append(last)
+        curve = thin
 
     out = {
         "fetched_at": now.isoformat(timespec="seconds"),

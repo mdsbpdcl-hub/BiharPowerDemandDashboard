@@ -30,7 +30,7 @@ GitHub Actions (every 30 min)  ->  scripts/fetch_data.py  ->  data/*.json, data/
 | File | Contents |
 |---|---|
 | `data/live.json` | Latest SCADA reading, previous-day report, today's curve |
-| `data/history/YYYY-MM.csv` | Every SCADA reading collected, one file per month |
+| `data/history/YYYY-MM/YYYY-MM-DD.csv` | Every SCADA reading collected, one file per day |
 | `data/daily.csv` | One row per day: max/min demand, times, DISCOM shares, availability |
 | `data/reference.json` | Official yearly figures with their sources. Edited by hand; the collector never changes it |
 
@@ -43,7 +43,7 @@ The collector uses only the Python standard library. If SLDC does not answer, th
 2. **Settings → Actions → General → Workflow permissions** → *Read and write permissions* → Save.
 3. **Actions → Update power demand data → Run workflow** once to start collection.
 
-Actions usage: about 1 minute per run, ~1,450 minutes a month. Free on public repositories; on a private repository this uses most of the 2,000 free minutes. To reduce it, change the cron in `.github/workflows/update-data.yml` to hourly (`7 * * * *`).
+Actions usage: each run takes about 1 minute, and each data commit also triggers a Pages rebuild of about 1 minute, so roughly 2,900 minutes a month at every 30 minutes. This is free on a public repository. On a private repository it exceeds the 2,000 free minutes, so change the cron in `.github/workflows/update-data.yml` to hourly (`7 * * * *`, about 1,450 minutes). Hourly runs still capture the full intraday curve, because each run collects all of the day's SCADA readings.
 
 ## Sources
 
