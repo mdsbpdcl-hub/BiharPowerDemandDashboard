@@ -58,34 +58,42 @@ def log(*a):
 
 
 # ---------------------------------------------------------------- HTTP
+def _ctx(verify=True):
+    """SSL context that still verifies the certificate but allows the legacy
+    TLS renegotiation the SLDC server needs (OpenSSL 3 blocks it by default:
+    'UNSAFE_LEGACY_RENEGOTIATION_DISABLED')."""
+    ctx = ssl.create_default_context()
+    ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0x4)
+    if not verify:
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+    return ctx
+
+
+def _is_cert_error(e):
+    r = getattr(e, "reason", e)
+    return isinstance(r, ssl.SSLCertVerificationError) or "CERTIFICATE_VERIFY_FAILED" in str(e)
+
+
 def http_get(url, accept="application/json", timeout=30):
-    """GET with retries. If the server's certificate chain cannot be verified
-    (common on government hosts with an incomplete chain), retry once without
-    verification - this is a public, read-only data feed - and say so."""
+    """GET with retries. If the certificate chain cannot be verified (common on
+    government hosts with an incomplete chain), retry without verification -
+    this is a public, read-only data feed - and report it."""
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": accept})
     last = None
     for attempt in range(3):
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            with urllib.request.urlopen(req, timeout=timeout, context=_ctx()) as r:
                 return r.read().decode("utf-8", "replace"), True
-        except ssl.SSLError as e:
-            last = e
-            break
-        except urllib.error.URLError as e:
-            if isinstance(getattr(e, "reason", None), ssl.SSLError):
-                last = e
-                break
-            last = e
         except Exception as e:  # noqa: BLE001
             last = e
+            if _is_cert_error(e):
+                break
         time.sleep(3 * (attempt + 1))
     else:
         raise last
-    log("TLS verification failed for", url, "-", last, "- retrying unverified")
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
+    log("certificate not verifiable for", url, "-", last, "- retrying unverified")
+    with urllib.request.urlopen(req, timeout=timeout, context=_ctx(verify=False)) as r:
         return r.read().decode("utf-8", "replace"), False
 
 
