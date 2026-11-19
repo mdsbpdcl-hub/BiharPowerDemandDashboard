@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-11-19T08:31:00+05:30",
+ "fetched_at": "2026-11-19T08:58:52+05:30",
  "source": "Bihar SLDC (BSPTCL) SCADA - sldc.bsptcl.co.in",
  "tls_verified": true,
  "latest": {
@@ -19,7 +19,7 @@
   "RAILWAY_DRAWL": -31.93,
   "Freq": 50.04
  },
- "latest_is_fresh": true,
+ "latest_is_fresh": false,
  "previous_day": {
   "date": "2026-11-18",
   "max": {
@@ -53,5 +53,9 @@
    "freq": 50.04
   }
  ],
- "errors": []
+ "errors": [
+  "latest: <urlopen error [SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legacy renegotiation disabled (_ssl.c:1011)>",
+  "series: <urlopen error [SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legacy renegotiation disabled (_ssl.c:1011)>",
+  "prevday: <urlopen error [SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legacy renegotiation disabled (_ssl.c:1011)>"
+ ]
 }
