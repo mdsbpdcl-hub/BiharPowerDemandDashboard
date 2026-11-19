@@ -19,7 +19,7 @@ A light, single-page dashboard of Bihar's power demand position, refreshed autom
 
 **Daily trend**: daily max and min demand, built up one day at a time from the first run (30 days / 90 days / 1 year / all).
 
-**Long-term picture** (yearly reference data): annual energy requirement vs availability, per-capita consumption, grid infrastructure, generation portfolio, rooftop solar, and district-wise consumption 2018-19 to 2024-25 (search and sort).
+**Long-term picture** (official public figures): annual energy requirement vs supplied (CEA), all-time peak demand met (CEA, or a higher peak SLDC has reported since), per-capita consumption, connections and commissioned capacity (Bihar Economic Survey), and district-wise consumption 2018-19 to 2024-25 (search and sort).
 
 ## How it works
 
@@ -32,7 +32,7 @@ GitHub Actions (every 30 min)  ->  scripts/fetch_data.py  ->  data/*.json, data/
 | `data/live.json` | Latest SCADA reading, previous-day report, today's curve |
 | `data/history/YYYY-MM.csv` | Every SCADA reading collected, one file per month |
 | `data/daily.csv` | One row per day: max/min demand, times, DISCOM shares, availability |
-| `data/reference.json` | Yearly datasets, refreshed once a day |
+| `data/reference.json` | Official yearly figures with their sources. Edited by hand; the collector never changes it |
 
 The collector uses only the Python standard library. If SLDC does not answer, the last good reading is kept and the page shows **Delayed** or **Not updated**; it never shows made-up numbers.
 
@@ -48,4 +48,11 @@ Actions usage: about 1 minute per run, ~1,450 minutes a month. Free on public re
 ## Sources
 
 - Live and previous-day data: State Load Despatch Centre, Bihar (BSPTCL), public SCADA API `sldc.bsptcl.co.in:8086/api`
-- Reference data: [BiharInfraTales energy dashboard](https://biharinfratales.com/energy), CC BY 4.0
+- Energy requirement vs supplied: CEA data in the Ministry of Power's Lok Sabha reply, [PIB, 29 Jan 2026](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2220087)
+- Record peak demand: [CEA Peak Power Supply Position, July 2026](https://cea.nic.in/wp-content/uploads/power_supply/2026/07/Peak_July_26_Revised.pdf)
+- Per-capita consumption, connections, commissioned capacity: Bihar Economic Survey 2025-26 (and 2024-25)
+- District-wise consumption: Bihar Economic Survey table as compiled by BiharInfraTales (not yet checked line by line)
+
+## Updating the official figures
+
+Open `data/reference.json` on GitHub, click the pencil icon, change the number and its `source`, and commit. The page picks it up on the next load. When the Bihar Economic Survey 2026-27 or a new CEA annual figure comes out, add a row there.

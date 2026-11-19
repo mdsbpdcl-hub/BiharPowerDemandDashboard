@@ -139,6 +139,18 @@
   .more{display:block;margin:10px auto 0}
   @media(max-width:620px){.hide-m{display:none}}
 
+  .src{margin:10px 0 0;font-size:11.5px;color:var(--ink-3)}
+  .src a{color:var(--ink-3)}
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fact{background:#fafbfc;border:1px solid var(--line-soft);border-radius:10px;padding:11px 13px}
+  .fact .k{font-size:12px;color:var(--ink-3);font-weight:600}
+  .fact .v{font-size:22px;font-weight:700;letter-spacing:-.01em;margin:2px 0}
+  .fact .v small{font-size:12.5px;color:var(--ink-3);font-weight:600;margin-left:3px}
+  .fact .t{font-size:12.5px;color:var(--ink-2)}
+  .fact .s{font-size:11px;color:var(--ink-3);margin-top:6px}
+  .fact .s a{color:var(--ink-3)}
+  .fact.wide{grid-column:1/-1}
+  @media(max-width:620px){.facts{grid-template-columns:1fr}}
   footer{border-top:1px solid var(--line);background:#fff;padding:18px 0;font-size:12.5px;color:var(--ink-3)}
   footer p{margin:4px 0}
   .warnbox{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
@@ -273,33 +285,21 @@
   <!-- CONTEXT -->
   <section>
     <div class="sec-h"><h2>Long-term picture</h2><span id="refNote"></span></div>
-    <div class="grid g2" style="margin-bottom:14px">
+    <div class="grid g2">
       <div class="card">
-        <h3>Annual energy requirement vs availability</h3>
+        <h3>Annual energy requirement vs supplied</h3>
         <p class="sub" id="dsSub">Million units (MU) a year</p>
         <div class="legend">
           <span><i class="sw" style="background:var(--demand)"></i>Requirement</span>
-          <span><i class="sw" style="background:#9ec5f4"></i>Availability</span>
+          <span><i class="sw" style="background:#9ec5f4"></i>Supplied</span>
         </div>
         <div class="chart sm"><canvas id="cDS"></canvas></div>
+        <p class="src" id="dsSrc"></p>
       </div>
       <div class="card">
-        <h3>Per-capita consumption</h3>
-        <p class="sub" id="pcSub">kWh per person, by year</p>
-        <div class="chart sm"><canvas id="cPC"></canvas></div>
-      </div>
-    </div>
-    <div class="grid g2">
-      <div class="card">
-        <h3>Grid at a glance</h3>
-        <p class="sub" id="infraSub">Network and consumer base</p>
-        <div class="tiles" id="tiles"></div>
-      </div>
-      <div class="card">
-        <h3>Generation portfolio</h3>
-        <p class="sub">Share of contracted capacity by source</p>
-        <div class="mix" id="mix"></div>
-        <p class="sub" style="margin:12px 0 0" id="rts"></p>
+        <h3>Key figures</h3>
+        <p class="sub">Official figures, with the source for each</p>
+        <div class="facts" id="facts"></div>
       </div>
     </div>
   </section>
@@ -318,13 +318,14 @@
         <tbody id="dBody"></tbody>
       </table>
       <button class="btn more" id="dMore">Show all 38 districts</button>
+      <p class="src" id="dSrc" style="padding:0 10px"></p>
     </div>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
-    <p><b>Sources.</b> Live and previous-day figures: <a href="https://sldc.bsptcl.co.in" target="_blank" rel="noopener">State Load Despatch Centre, Bihar (BSPTCL)</a> public SCADA feed. Yearly reference data: <a href="https://biharinfratales.com/energy" target="_blank" rel="noopener">BiharInfraTales</a> (CC BY 4.0).</p>
+    <p><b>Sources.</b> Live and previous-day figures: <a href="https://sldc.bsptcl.co.in" target="_blank" rel="noopener">State Load Despatch Centre, Bihar (BSPTCL)</a> public SCADA feed. Yearly figures: Central Electricity Authority, Ministry of Power (PIB) and Bihar Economic Survey, as named under each figure.</p>
     <p>Data is collected automatically every 30 minutes. Download: <a href="data/daily.csv">daily peaks (CSV)</a> · <a id="histLink" href="#">this month's readings (CSV)</a>. <span id="fetchedAt"></span></p>
   </div>
 </footer>
@@ -473,15 +474,19 @@
     $('histLink').href = `data/history/${mon}.csv`;
   }
 
+  // Record = official record, or a higher daily maximum collected from SLDC since then
   function recordPeak() {
-    const k = (REF.kpis || []).find(x => /peak demand/i.test(x.metric));
-    return k ? {mw: parseFloat(k.value), note: (k.unit_note || '').replace(/^MW\s*/, '').replace(/[()]/g, '')} : null;
+    const r = REF.record_peak; if (!r) return null;
+    let rec = {mw: r.mw, date: r.date, time: r.time, official: true};
+    DAILY.forEach(d => { const v = +d.max_demand_mw; if (v > rec.mw && d.date > r.date) rec = {mw: v, date: d.date, time: (d.max_time || '').slice(0, 5), official: false}; });
+    return rec;
   }
+  const dlong = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'});
   function renderRecord() {
     const r = recordPeak(), P = LIVE.previous_day;
     if (r && P?.max?.demand) $('pRec').textContent = `${IN(P.max.demand / r.mw * 100)}% of ${IN(r.mw)} MW`;
+    if (REF.record_peak) renderFacts();
   }
-
   // ---------------- daily trend
   let range = 30;
   function renderDaily() {
@@ -512,40 +517,43 @@
     range = +b.dataset.d; renderDaily();
   });
 
-  // ---------------- reference
+  // ---------------- reference (official figures)
+  const srcLink = o => o?.url ? `<a href="${o.url}" target="_blank" rel="noopener">${o.source}</a>` : (o?.source || '');
+  function renderFacts() {
+    const r = recordPeak(), R = REF.record_peak, pc = REF.per_capita?.points || [], cn = REF.consumers, cap = REF.capacity;
+    const f = [];
+    if (r) f.push(`<div class="fact"><div class="k">All-time peak demand met</div><div class="v num">${IN(r.mw)}<small>MW</small></div>
+      <div class="t">${dlong(r.date)}${r.time ? ', ' + r.time : ''}</div>
+      <div class="s">${r.official ? srcLink(R) : 'SLDC previous-day report (collected by this dashboard)'}</div></div>`);
+    if (pc.length) { const n = pc[pc.length - 1], p = pc[pc.length - 2];
+      f.push(`<div class="fact"><div class="k">Per-capita consumption</div><div class="v num">${IN(n.kwh)}<small>kWh</small></div>
+      <div class="t">${n.fy}${p ? ` · ${n.kwh >= p.kwh ? '+' : ''}${IN((n.kwh / p.kwh - 1) * 100, 1)}% on ${p.fy} (${IN(p.kwh)} kWh)` : ''}</div>
+      <div class="s">${srcLink(REF.per_capita)}</div></div>`); }
+    if (cn) f.push(`<div class="fact"><div class="k">Electricity connections</div><div class="v">${cn.label}</div>
+      <div class="t">${cn.fy} · ${IN(cn.domestic_share_pct, 1)}% domestic</div><div class="s">${srcLink(cn)}</div></div>`);
+    if (cap) { const th = cap.thermal_mw / cap.total_mw * 100;
+      f.push(`<div class="fact"><div class="k">Commissioned capacity</div><div class="v num">${IN(cap.total_mw)}<small>MW</small></div>
+      <div class="t">Thermal ${IN(cap.thermal_mw)} MW (${IN(th, 1)}%) · other ${IN(cap.total_mw - cap.thermal_mw)} MW</div>
+      <div class="split"><div class="bar"><div style="width:${th}%;background:var(--navy)"></div><div style="width:${100 - th}%;background:#9ec5f4"></div></div></div>
+      <div class="s">${srcLink(cap)}</div></div>`); }
+    $('facts').innerHTML = f.join('');
+  }
   function renderRef() {
-    const ds = REF.demand_supply || [];
-    if (ds.length) {
-      const yrs = ds.map(r => r.year), dem = ds.map(r => +r.energy_demand_mu), av = ds.map(r => +r.energy_availability_mu);
+    const E = REF.energy_supply;
+    if (E?.rows?.length) {
+      const yrs = E.rows.map(r => r.fy), dem = E.rows.map(r => r.requirement_mu), av = E.rows.map(r => r.supplied_mu);
       draw('cDS', {type: 'bar', data: {labels: yrs, datasets: [
-        {label: 'Requirement', data: dem, backgroundColor: C.demand, borderRadius: 4, borderSkipped: 'start', categoryPercentage: .7, barPercentage: .9},
-        {label: 'Availability', data: av, backgroundColor: '#9ec5f4', borderRadius: 4, borderSkipped: 'start', categoryPercentage: .7, barPercentage: .9}
+        {label: 'Requirement', data: dem, backgroundColor: C.demand, borderRadius: 4, borderSkipped: 'start', categoryPercentage: .6, barPercentage: .9},
+        {label: 'Supplied', data: av, backgroundColor: '#9ec5f4', borderRadius: 4, borderSkipped: 'start', categoryPercentage: .6, barPercentage: .9}
       ]}, options: {maintainAspectRatio: false, interaction: {mode: 'index', intersect: false}, scales: axes('MU'),
-        plugins: {tooltip: {callbacks: {label: c => ` ${c.dataset.label}: ${IN(c.raw)} MU`, footer: it => { const i = it[0].dataIndex; return `Shortfall: ${IN((dem[i] - av[i]) / dem[i] * 100, 1)}%`; }}}}}});
-      const n = ds.length - 1, gr = (dem[n] / dem[0] - 1) * 100;
-      $('dsSub').textContent = `MU a year · ${yrs[n]} requirement ${IN(dem[n])} MU, shortfall ${IN((dem[n] - av[n]) / dem[n] * 100, 1)}% · up ${IN(gr)}% since ${yrs[0]}`;
+        plugins: {tooltip: {callbacks: {label: c => ` ${c.dataset.label}: ${IN(c.raw)} MU`, footer: it => { const i = it[0].dataIndex; return `Not supplied: ${IN(dem[i] - av[i])} MU (${IN((dem[i] - av[i]) / dem[i] * 100, 1)}%)`; }}}}}});
+      const n = yrs.length - 1, P = E.partial;
+      $('dsSub').textContent = `MU, by financial year · ${yrs[n]}: ${IN(dem[n])} MU required, ${IN((dem[n] - av[n]) / dem[n] * 100, 1)}% not supplied` + (P ? ` · ${P.period}: ${IN(P.requirement_mu)} MU so far` : '');
+      $('dsSrc').innerHTML = 'Source: ' + srcLink(E);
     }
-    const pc = REF.per_capita || [];
-    if (pc.length) {
-      const v = pc.map(r => +r.consumption_kwh);
-      draw('cPC', {type: 'bar', data: {labels: pc.map(r => r.year), datasets: [{label: 'kWh per person', data: v, backgroundColor: pc.map((_, i) => i === pc.length - 1 ? C.demand : '#b7d3f6'), borderRadius: 4, borderSkipped: 'start', categoryPercentage: .75}]},
-        options: {maintainAspectRatio: false, scales: axes('kWh'), plugins: {tooltip: {callbacks: {label: c => ` ${IN(c.raw)} kWh per person`}}}}});
-      const n = v.length - 1;
-      $('pcSub').textContent = `kWh per person · ${pc[n].year}: ${IN(v[n])} kWh (${v[n] >= v[n - 1] ? '+' : ''}${IN((v[n] / v[n - 1] - 1) * 100, 1)}% on previous year)`;
-    }
-    const K = Object.fromEntries((REF.kpis || []).map(k => [k.metric.toLowerCase(), k]));
-    const t = [['Consumers', 'consumer base', 'lakh'], ['Connected load', 'connected load', 'MW'], ['Record peak demand', 'peak demand', 'MW'], ['Grid substations', 'grid substations', ''],
-      ['Power substations', 'power substations', ''], ['Transmission lines', 'transmission line length', 'ckm'], ['Transformation capacity', 'transformation capacity', 'MVA'], ['Evacuation capacity', 'evacuation capacity', 'MVA']];
-    $('tiles').innerHTML = t.filter(x => K[x[1]]).map(([lab, key, u]) => `<div class="tile"><div class="k">${lab}</div><div class="v num">${IN(parseFloat(K[key].value))}<small>${u}</small></div></div>`).join('');
-    const r = recordPeak(); if (r?.note) $('infraSub').textContent = `Network and consumer base · record peak ${r.note}`;
-    const mix = (REF.portfolio || []).map(m => ({n: m.energy_source, v: +m.percentage_share})).sort((a, b) => b.v - a.v);
-    const mx = Math.max(...mix.map(m => m.v), 1);
-    $('mix').innerHTML = mix.map(m => `<div class="m"><span>${m.n}</span><div class="track"><div style="width:${m.v / mx * 100}%"></div></div><span class="p num">${IN(m.v, m.v % 1 ? 1 : 0)}%</span></div>`).join('');
-    const re = mix.filter(m => !/thermal/i.test(m.n)).reduce((a, m) => a + m.v, 0);
-    const rs = Object.fromEntries((REF.rooftop_solar || []).map(x => [x.parameter.toLowerCase(), x.value]));
-    const cap = Object.entries(rs).find(([k]) => k.includes('capacity')), inst = Object.entries(rs).find(([k]) => k.startsWith('installation (')), app = Object.entries(rs).find(([k]) => k.includes('application'));
-    $('rts').innerHTML = `Renewables are <b>${IN(re)}%</b> of the portfolio.` + (cap ? ` Rooftop solar: <b>${cap[1]} MW</b> from ${inst ? inst[1] : '—'} installations (${app ? app[1] : '—'} applications).` : '');
-    $('refNote').textContent = REF.fetched_at ? `Reference data as of ${new Date(REF.fetched_at).toLocaleDateString('en-IN', {day: 'numeric', month: 'short', year: 'numeric'})}` : '';
+    renderFacts();
+    $('refNote').textContent = REF.updated ? `Official figures as of ${dlong(REF.updated)}` : '';
+    $('dSrc').innerHTML = REF.district_consumption?.source ? 'Source: ' + REF.district_consumption.source : '';
     renderRecord();
     renderDistricts();
   }
@@ -558,7 +566,7 @@
     return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${C.demand}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
   }
   function renderDistricts() {
-    const raw = REF.district_consumption || [];
+    const raw = REF.district_consumption?.rows || [];
     if (!raw.length) return;
     const keys = Object.keys(raw[0]).filter(k => k.startsWith('year_')).sort();
     let rows = raw.map(r => { const v = keys.map(k => +r[k]); return {d: r.district, v, now: v[v.length - 1], g: (v[v.length - 1] / v[0] - 1) * 100}; });
@@ -581,7 +589,7 @@
   // ---------------- load
   async function loadLive() {
     try { renderLive(await getJSON('data/live.json')); } catch (e) { $('readingAt').textContent = 'Could not load data'; console.error(e); }
-    try { DAILY = await getCSV('data/daily.csv'); renderDaily(); } catch (e) { console.error(e); }
+    try { DAILY = await getCSV('data/daily.csv'); renderDaily(); renderRecord(); } catch (e) { console.error(e); }
   }
   async function loadAll() {
     try { REF = await getJSON('data/reference.json'); renderRef(); } catch (e) { console.error(e); }

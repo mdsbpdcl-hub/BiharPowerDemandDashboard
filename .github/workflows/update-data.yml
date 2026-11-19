@@ -5,11 +5,6 @@ on:
     # every 30 minutes (UTC); GitHub may delay scheduled runs by a few minutes
     - cron: "7,37 * * * *"
   workflow_dispatch:
-    inputs:
-      force_reference:
-        description: "Also refresh the yearly reference datasets now"
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -30,12 +25,7 @@ jobs:
           python-version: "3.12"
 
       - name: Collect SLDC data
-        run: |
-          if [ "${{ inputs.force_reference }}" = "true" ]; then
-            python scripts/fetch_data.py --force-reference
-          else
-            python scripts/fetch_data.py
-          fi
+        run: python scripts/fetch_data.py
 
       - name: Commit changes
         run: |

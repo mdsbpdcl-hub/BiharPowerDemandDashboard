@@ -9,16 +9,15 @@ Sources
   1. Bihar SLDC (BSPTCL) public SCADA API - live state demand, DISCOM split,
      drawl vs schedule, state generation, frequency, previous-day max/min.
        https://sldc.bsptcl.co.in:8086/api
-  2. BiharInfraTales open data (CC BY 4.0) - yearly reference datasets
-     (energy demand vs availability, per-capita use, district consumption,
-     generation portfolio, grid infrastructure KPIs, rooftop solar).
-       https://biharinfratales.com/energy
+  Yearly reference figures live in data/reference.json. That file is
+  hand-curated from official public sources (CEA, PIB, Bihar Economic Survey)
+  and is never overwritten by this script.
 
 Outputs (all inside data/)
   live.json              latest SCADA reading + previous-day report + today's curve
   history/YYYY-MM.csv    one row per new SCADA reading (builds the intraday record)
   daily.csv              one row per day: previous-day max / min demand etc.
-  reference.json         yearly reference datasets (refreshed once a day)
+  reference.json         official yearly figures (edited by hand, not touched here)
 """
 
 import csv
@@ -43,16 +42,6 @@ SLDC_URLS = {
     "series": f"{SLDC}/SCADA/Get/GetAllSCADAData",
     "prevday": f"{SLDC}/pspreportpsp/Get/pspreport_psp_regionalavailabilitydemands",
 }
-BIT = "https://biharinfratales.com/api/energy"
-REF_URLS = {
-    "kpis": f"{BIT}/kpis",
-    "demand_supply": f"{BIT}/demand-supply",
-    "per_capita": f"{BIT}/per-capita",
-    "district_consumption": f"{BIT}/district-consumption",
-    "portfolio": f"{BIT}/portfolio",
-    "rooftop_solar": f"{BIT}/surya-yojana",
-}
-
 UA = "BiharPowerDemandDashboard/1.0 (+github.com/mdsbpdcl-hub)"
 
 # Numeric SCADA fields kept in history / live
@@ -357,39 +346,8 @@ def update_live():
     return latest is not None or prev is not None
 
 
-def update_reference(force=False):
-    path = os.path.join(DATA, "reference.json")
-    ref = read_json(path, {}) or {}
-    last = ref.get("fetched_at")
-    if not force and last:
-        try:
-            if datetime.now(IST) - datetime.fromisoformat(last) < timedelta(hours=20):
-                return
-        except ValueError:
-            pass
-    got = {}
-    for key, url in REF_URLS.items():
-        try:
-            txt, _ = http_get(url)
-            val = json.loads(txt)
-            if isinstance(val, list) and val:
-                got[key] = val
-        except Exception as e:  # noqa: BLE001
-            log("reference", key, "failed:", e)
-    if not got:
-        log("reference: nothing fetched, keeping previous copy")
-        return
-    ref.update(got)
-    ref["fetched_at"] = datetime.now(IST).isoformat(timespec="seconds")
-    ref["source"] = "BiharInfraTales open data (CC BY 4.0) - biharinfratales.com/energy"
-    write_json(path, ref)
-    log("reference updated:", ", ".join(got))
-
-
 if __name__ == "__main__":
-    force_ref = "--force-reference" in sys.argv
     ok = update_live()
-    update_reference(force=force_ref)
     # Never fail the workflow just because SLDC is briefly down;
     # live.json records the error and the page shows "Delayed".
     if not ok:
