@@ -1,23 +1,23 @@
 {
- "fetched_at": "2026-11-21T01:55:27+05:30",
+ "fetched_at": "2026-11-21T02:52:41+05:30",
  "source": "Bihar SLDC (BSPTCL) SCADA - sldc.bsptcl.co.in",
  "tls_verified": false,
  "latest": {
-  "ts": "2026-11-21T01:43:00+05:30",
-  "DemandMet": 3701.92,
-  "NB_DEMAND_MET": 1880.32,
-  "SB_DEMAND_MET": 979.48,
-  "Actual": 2609.12,
-  "Scheduled": 2742.27,
-  "Deviation": -133.15,
-  "NB_NET_DWL": 787.52,
-  "NB_NET_SCHD": 1763.83,
-  "SB_NET_DWL": 979.48,
-  "SB_NET_SCHD": 2070.58,
-  "StateGeneration": 1092.79,
-  "ThermalGeneration": 236.79,
-  "RAILWAY_DRAWL": -31.42,
-  "Freq": 49.93
+  "ts": "2026-11-21T02:42:00+05:30",
+  "DemandMet": 3606.97,
+  "NB_DEMAND_MET": 1835.63,
+  "SB_DEMAND_MET": 940.51,
+  "Actual": 2516.41,
+  "Scheduled": 2692.91,
+  "Deviation": -176.5,
+  "NB_NET_DWL": 745.06,
+  "NB_NET_SCHD": 1738.47,
+  "SB_NET_DWL": 940.51,
+  "SB_NET_SCHD": 2040.81,
+  "StateGeneration": 1090.56,
+  "ThermalGeneration": 229.27,
+  "RAILWAY_DRAWL": -31.23,
+  "Freq": 49.96
  },
  "latest_is_fresh": true,
  "previous_day": {
@@ -240,6 +240,69 @@
    "nb": 1880.32,
    "sb": 979.48,
    "freq": 49.93
+  },
+  {
+   "ts": "2026-11-21T02:10:30+05:30",
+   "demand": 3623.4,
+   "drawl": 2529.3,
+   "schedule": 2707.89,
+   "nb": 1831.63,
+   "sb": 951.04,
+   "freq": 50.01
+  },
+  {
+   "ts": "2026-11-21T02:17:30+05:30",
+   "demand": 3652.41,
+   "drawl": 2556.82,
+   "schedule": 2699.83,
+   "nb": 1843.89,
+   "sb": 980.46,
+   "freq": 49.99
+  },
+  {
+   "ts": "2026-11-21T02:21:30+05:30",
+   "demand": 3637.01,
+   "drawl": 2550.24,
+   "schedule": 2699.83,
+   "nb": 1840.38,
+   "sb": 965.91,
+   "freq": 49.98
+  },
+  {
+   "ts": "2026-11-21T02:28:30+05:30",
+   "demand": 3628.78,
+   "drawl": 2533.77,
+   "schedule": 2699.83,
+   "nb": 1823.02,
+   "sb": 972.14,
+   "freq": 50.0
+  },
+  {
+   "ts": "2026-11-21T02:34:30+05:30",
+   "demand": 3621.66,
+   "drawl": 2529.38,
+   "schedule": 2692.91,
+   "nb": 1825.48,
+   "sb": 955.09,
+   "freq": 50.01
+  },
+  {
+   "ts": "2026-11-21T02:39:00+05:30",
+   "demand": 3627.52,
+   "drawl": 2534.09,
+   "schedule": 2692.91,
+   "nb": 1829.55,
+   "sb": 967.9,
+   "freq": 49.97
+  },
+  {
+   "ts": "2026-11-21T02:42:00+05:30",
+   "demand": 3606.97,
+   "drawl": 2516.41,
+   "schedule": 2692.91,
+   "nb": 1835.63,
+   "sb": 940.51,
+   "freq": 49.96
   }
  ],
  "errors": []
