@@ -1,23 +1,23 @@
 {
- "fetched_at": "2026-11-22T20:50:52+05:30",
+ "fetched_at": "2026-11-22T21:50:20+05:30",
  "source": "Bihar SLDC (BSPTCL) SCADA - sldc.bsptcl.co.in",
  "tls_verified": false,
  "latest": {
-  "ts": "2026-11-22T20:41:30+05:30",
-  "DemandMet": 4743.54,
-  "NB_DEMAND_MET": 2360.5,
-  "SB_DEMAND_MET": 1503.82,
-  "Actual": 3618.62,
-  "Scheduled": 3746.23,
-  "Deviation": -127.61,
-  "NB_NET_DWL": 1235.58,
-  "NB_NET_SCHD": 2241.62,
-  "SB_NET_DWL": 1503.82,
-  "SB_NET_SCHD": 2631.47,
-  "StateGeneration": 1124.92,
-  "ThermalGeneration": 235.52,
-  "RAILWAY_DRAWL": -41.32,
-  "Freq": 49.95
+  "ts": "2026-11-22T21:37:30+05:30",
+  "DemandMet": 4469.59,
+  "NB_DEMAND_MET": 2191.8,
+  "SB_DEMAND_MET": 1442.95,
+  "Actual": 3387.39,
+  "Scheduled": 3442.36,
+  "Deviation": -54.97,
+  "NB_NET_DWL": 1109.6,
+  "NB_NET_SCHD": 2081.29,
+  "SB_NET_DWL": 1442.95,
+  "SB_NET_SCHD": 2443.26,
+  "StateGeneration": 1082.19,
+  "ThermalGeneration": 231.1,
+  "RAILWAY_DRAWL": -28.43,
+  "Freq": 50.06
  },
  "latest_is_fresh": true,
  "previous_day": {
@@ -1788,6 +1788,78 @@
    "nb": 2360.5,
    "sb": 1503.82,
    "freq": 49.95
+  },
+  {
+   "ts": "2026-11-22T20:49:00+05:30",
+   "demand": 4726.45,
+   "drawl": 3601.08,
+   "schedule": 3671.34,
+   "nb": 2358.79,
+   "sb": 1482.46,
+   "freq": 49.93
+  },
+  {
+   "ts": "2026-11-22T20:56:00+05:30",
+   "demand": 4684.04,
+   "drawl": 3557.28,
+   "schedule": 3671.34,
+   "nb": 2349.3,
+   "sb": 1457.97,
+   "freq": 49.98
+  },
+  {
+   "ts": "2026-11-22T21:04:00+05:30",
+   "demand": 4624.5,
+   "drawl": 3502.72,
+   "schedule": 3553.34,
+   "nb": 2282.11,
+   "sb": 1457.9,
+   "freq": 49.95
+  },
+  {
+   "ts": "2026-11-22T21:07:30+05:30",
+   "demand": 4605.39,
+   "drawl": 3478.6,
+   "schedule": 3553.34,
+   "nb": 2267.7,
+   "sb": 1445.87,
+   "freq": 50.01
+  },
+  {
+   "ts": "2026-11-22T21:15:00+05:30",
+   "demand": 4564.52,
+   "drawl": 3442.13,
+   "schedule": 3553.34,
+   "nb": 2272.05,
+   "sb": 1418.28,
+   "freq": 50.0
+  },
+  {
+   "ts": "2026-11-22T21:27:00+05:30",
+   "demand": 4536.2,
+   "drawl": 3416.27,
+   "schedule": 3475.77,
+   "nb": 2237.15,
+   "sb": 1421.93,
+   "freq": 50.03
+  },
+  {
+   "ts": "2026-11-22T21:30:30+05:30",
+   "demand": 4457.12,
+   "drawl": 3337.62,
+   "schedule": 3475.77,
+   "nb": 2212.57,
+   "sb": 1375.51,
+   "freq": 50.04
+  },
+  {
+   "ts": "2026-11-22T21:37:30+05:30",
+   "demand": 4469.59,
+   "drawl": 3387.39,
+   "schedule": 3442.36,
+   "nb": 2191.8,
+   "sb": 1442.95,
+   "freq": 50.06
   }
  ],
  "errors": []
