@@ -1,23 +1,23 @@
 {
- "fetched_at": "2026-11-23T18:04:09+05:30",
+ "fetched_at": "2026-11-23T19:27:41+05:30",
  "source": "Bihar SLDC (BSPTCL) SCADA - sldc.bsptcl.co.in",
  "tls_verified": false,
  "latest": {
-  "ts": "2026-11-23T17:57:00+05:30",
-  "DemandMet": 5413.28,
-  "NB_DEMAND_MET": 2616.57,
-  "SB_DEMAND_MET": 2466.57,
-  "Actual": 4896.39,
-  "Scheduled": 4958.35,
-  "Deviation": -61.96,
-  "NB_NET_DWL": 2099.69,
-  "NB_NET_SCHD": 2518.61,
-  "SB_NET_DWL": 2466.57,
-  "SB_NET_SCHD": 2956.62,
-  "StateGeneration": 516.88,
-  "ThermalGeneration": 239.63,
-  "RAILWAY_DRAWL": -37.11,
-  "Freq": 49.69
+  "ts": "2026-11-23T19:20:30+05:30",
+  "DemandMet": 5603.06,
+  "NB_DEMAND_MET": 2561.94,
+  "SB_DEMAND_MET": 2738.53,
+  "Actual": 5102.73,
+  "Scheduled": 4771.64,
+  "Deviation": 331.09,
+  "NB_NET_DWL": 2061.6,
+  "NB_NET_SCHD": 2425.11,
+  "SB_NET_DWL": 2738.53,
+  "SB_NET_SCHD": 2846.87,
+  "StateGeneration": 500.33,
+  "ThermalGeneration": 234.77,
+  "RAILWAY_DRAWL": -46.61,
+  "Freq": 50.05
  },
  "latest_is_fresh": true,
  "previous_day": {
@@ -1761,7 +1761,18 @@
    "nb": 2616.57,
    "sb": 2466.57,
    "freq": 49.69
+  },
+  {
+   "ts": "2026-11-23T19:20:30+05:30",
+   "demand": 5603.06,
+   "drawl": 5102.73,
+   "schedule": 4771.64,
+   "nb": 2561.94,
+   "sb": 2738.53,
+   "freq": 50.05
   }
  ],
- "errors": []
+ "errors": [
+  "series: HTTP Error 500: Internal Server Error"
+ ]
 }
