@@ -1,23 +1,23 @@
 {
- "fetched_at": "2026-11-24T08:59:51+05:30",
+ "fetched_at": "2026-11-24T10:09:14+05:30",
  "source": "Bihar SLDC (BSPTCL) SCADA - sldc.bsptcl.co.in",
  "tls_verified": false,
  "latest": {
-  "ts": "2026-11-24T08:54:00+05:30",
-  "DemandMet": 4750.81,
-  "NB_DEMAND_MET": 2094.45,
-  "SB_DEMAND_MET": 2329.42,
-  "Actual": 4211.65,
-  "Scheduled": 4343.33,
-  "Deviation": -131.69,
-  "NB_NET_DWL": 1555.29,
-  "NB_NET_SCHD": 2246.09,
-  "SB_NET_DWL": 2329.42,
-  "SB_NET_SCHD": 2636.71,
-  "StateGeneration": 539.16,
-  "ThermalGeneration": 226.81,
-  "RAILWAY_DRAWL": -35.7,
-  "Freq": 50.09
+  "ts": "2026-11-24T09:46:00+05:30",
+  "DemandMet": 4349.23,
+  "NB_DEMAND_MET": 1944.79,
+  "SB_DEMAND_MET": 2081.95,
+  "Actual": 3810.76,
+  "Scheduled": 3816.12,
+  "Deviation": -5.36,
+  "NB_NET_DWL": 1406.32,
+  "NB_NET_SCHD": 2003.3,
+  "SB_NET_DWL": 2081.95,
+  "SB_NET_SCHD": 2351.7,
+  "StateGeneration": 538.47,
+  "ThermalGeneration": 225.14,
+  "RAILWAY_DRAWL": -7.31,
+  "Freq": 49.95
  },
  "latest_is_fresh": true,
  "previous_day": {
@@ -600,6 +600,15 @@
    "nb": 2094.45,
    "sb": 2329.42,
    "freq": 50.09
+  },
+  {
+   "ts": "2026-11-24T09:46:00+05:30",
+   "demand": 4349.23,
+   "drawl": 3810.76,
+   "schedule": 3816.12,
+   "nb": 1944.79,
+   "sb": 2081.95,
+   "freq": 49.95
   }
  ],
  "errors": [
